@@ -1,14 +1,14 @@
 # About
 
-このプロジェクトは、Typescriptでのドメイン駆動設計のサンプル実装です。
+This Project is a sample implementation of Domain-Driven Design in Typescript.
 
-## 使用技術
+## Used Frameworks
 
-- pnpm : パッケージマネージャ
-- hono.js : Webフレームワーク
+- pnpm : package manager
+- hono.js : web framework
 - prisma.js : ORM
-- sqlite : 書き込み用のDBとして使用
-- inversify.js : DIライブラリ
-- redis : 読み取り用のDBとして使用
-- biome : コードフォーマッター
-- zod : バリデーション
+- sqlite : database for writing
+- inversify.js : DI library
+- redis : database for reading
+- biome : code formatter
+- zod : validation
