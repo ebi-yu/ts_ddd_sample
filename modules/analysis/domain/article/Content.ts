@@ -1,0 +1,22 @@
+export class Content {
+  public readonly _value: string;
+  public readonly MAX_LENGTH = 5000;
+
+  constructor(value: string) {
+    value = value.trim();
+    if (value.length === 0) {
+      throw new Error("Content cannot be empty");
+    }
+    if (value.length > this.MAX_LENGTH) {
+      throw new Error(
+        `Content cannot be longer than ${this.MAX_LENGTH} characters`
+      );
+    }
+
+    this._value = value;
+  }
+
+  equals(other: Content): boolean {
+    return this._value === other._value;
+  }
+}
