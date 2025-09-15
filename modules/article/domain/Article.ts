@@ -1,16 +1,15 @@
-import type { Title } from "./Title.js";
-import { ArticleId } from "./AtricleId.js";
-import type { AuthorUserId } from "./AutoerUserId.js";
-import type { Content } from "./Content.js";
 import {
   ArticleEvent,
   EventType,
   type ContentEventData,
   type CreateEventData,
   type TitleEventData,
-} from "./ArticleEvent.js";
+} from "./ArticleEvent.ts";
+import { ArticleId } from "./vo/ArticleId.ts";
+import type { AuthorUserId } from "./vo/AuthorUserId.ts";
+import type { Content } from "./vo/Content.ts";
+import type { Title } from "./vo/Title.ts";
 
-// Article Aggregate
 export class Article {
   private constructor(
     private _events: ArticleEvent<

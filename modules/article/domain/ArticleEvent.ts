@@ -1,8 +1,8 @@
-import { PlainDate } from "../../../../shared/vo/PlainDate.js";
-import type { ArticleId } from "./AtricleId.js";
-import type { AuthorUserId } from "./AutoerUserId.js";
-import type { Content } from "./Content.js";
-import type { Title } from "./Title.js";
+import { PlainDate } from "@shared/domain/vo/PlainDate.ts";
+import type { ArticleId } from "./vo/ArticleId.ts";
+import type { AuthorUserId } from "./vo/AuthorUserId.ts";
+import type { Content } from "./vo/Content.ts";
+import type { Title } from "./vo/Title.ts";
 
 export class EventType {
   static ChangeTitle = "changeTitle";
