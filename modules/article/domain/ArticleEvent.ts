@@ -4,13 +4,16 @@ import type { AuthorUserId } from "./vo/AuthorUserId.ts";
 import type { Content } from "./vo/Content.ts";
 import type { Title } from "./vo/Title.ts";
 
-export class EventType {
-  static ChangeTitle = "changeTitle";
-  static ChangeContent = "changeContent";
-  static Publish = "publish";
-  static Archive = "archive";
-  static Draft = "draft";
-}
+export const EVENT_TYPE = {
+  CREATE: "create",
+  CHANGE_TITLE: "changeTitle",
+  CHANGE_CONTENT: "changeContent",
+  PUBLISH: "publish",
+  ARCHIVE: "archive",
+  DRAFT: "draft",
+} as const;
+export type EventType = (typeof EVENT_TYPE)[keyof typeof EVENT_TYPE];
+
 export type TitleEventData = {
   oldTitle: Title | null;
   newTitle: Title;
@@ -27,80 +30,156 @@ export type CreateEventData = {
   authorId: AuthorUserId;
 };
 
-export class ArticleEvent<T = undefined> {
+// Value Object としてのイベントクラス
+export abstract class ArticleEventBase {
   constructor(
-    private _articleId: ArticleId,
-    private _eventType: EventType,
-    private _eventDate: PlainDate = new PlainDate(),
-    private _eventData?: T
+    protected readonly _articleId: ArticleId,
+    protected readonly _eventDate: PlainDate = new PlainDate()
   ) {}
 
-  static create(
-    articleId: ArticleId,
-    eventType: EventType,
-    eventData?: CreateEventData
-  ): ArticleEvent<CreateEventData> {
-    return new ArticleEvent<CreateEventData>(
-      articleId,
-      eventType,
-      new PlainDate(),
-      eventData
-    );
-  }
-
-  static changeTitle(
-    articleId: ArticleId,
-    eventData: TitleEventData
-  ): ArticleEvent<TitleEventData> {
-    return new ArticleEvent<TitleEventData>(
-      articleId,
-      EventType.ChangeTitle,
-      new PlainDate(),
-      eventData
-    );
-  }
-
-  static changeContent(
-    articleId: ArticleId,
-    eventData: ContentEventData
-  ): ArticleEvent<ContentEventData> {
-    return new ArticleEvent<ContentEventData>(
-      articleId,
-      EventType.ChangeContent,
-      new PlainDate(),
-      eventData
-    );
-  }
-
-  static publish(articleId: ArticleId): ArticleEvent {
-    return new ArticleEvent(articleId, EventType.Publish, new PlainDate());
-  }
-
-  static archive(articleId: ArticleId): ArticleEvent {
-    return new ArticleEvent(articleId, EventType.Archive, new PlainDate());
-  }
-
-  static draft(articleId: ArticleId): ArticleEvent {
-    return new ArticleEvent(articleId, EventType.Draft, new PlainDate());
+  get articleId(): ArticleId {
+    return this._articleId;
   }
 
   get eventDate(): PlainDate {
     return this._eventDate;
   }
-  get eventData(): T | undefined {
-    return this._eventData;
+
+  get occurredAt(): Date {
+    return new Date(this._eventDate.value);
   }
 
-  get eventType(): EventType {
-    return this._eventType;
-  }
+  abstract get type(): EventType;
+  abstract get data(): any;
 
-  equals(other: ArticleEvent<T>): boolean {
+  equals(other: ArticleEventBase): boolean {
     return (
-      this._articleId === other._articleId &&
-      this._eventType === other._eventType &&
+      this._articleId.equals(other._articleId) &&
+      this.type === other.type &&
       this._eventDate.equals(other._eventDate) &&
-      JSON.stringify(this._eventData) === JSON.stringify(other._eventData)
+      JSON.stringify(this.data) === JSON.stringify(other.data)
     );
   }
 }
+
+export class ArticleCreateEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.CREATE;
+
+  constructor(
+    articleId: ArticleId,
+    private readonly _data: CreateEventData,
+    eventDate?: PlainDate
+  ) {
+    super(articleId, eventDate);
+  }
+
+  get data(): CreateEventData {
+    return this._data;
+  }
+}
+
+export class ArticleTitleChangeEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.CHANGE_TITLE;
+
+  constructor(
+    articleId: ArticleId,
+    private readonly _data: TitleEventData,
+    eventDate?: PlainDate
+  ) {
+    super(articleId, eventDate);
+  }
+
+  get data(): TitleEventData {
+    return this._data;
+  }
+}
+
+export class ArticleContentChangeEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.CHANGE_CONTENT;
+
+  constructor(
+    articleId: ArticleId,
+    private readonly _data: ContentEventData,
+    eventDate?: PlainDate
+  ) {
+    super(articleId, eventDate);
+  }
+
+  get data(): ContentEventData {
+    return this._data;
+  }
+}
+
+export class ArticlePublishEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.PUBLISH;
+
+  constructor(articleId: ArticleId, eventDate?: PlainDate) {
+    super(articleId, eventDate);
+  }
+
+  get data(): undefined {
+    return undefined;
+  }
+}
+
+export class ArticleArchiveEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.ARCHIVE;
+
+  constructor(articleId: ArticleId, eventDate?: PlainDate) {
+    super(articleId, eventDate);
+  }
+
+  get data(): undefined {
+    return undefined;
+  }
+}
+
+export class ArticleDraftEvent extends ArticleEventBase {
+  readonly type = EVENT_TYPE.DRAFT;
+
+  constructor(articleId: ArticleId, eventDate?: PlainDate) {
+    super(articleId, eventDate);
+  }
+
+  get data(): undefined {
+    return undefined;
+  }
+}
+
+// Union型でまとめる（型安全性を維持）
+export type ArticleEvent =
+  | ArticleCreateEvent
+  | ArticleTitleChangeEvent
+  | ArticleContentChangeEvent
+  | ArticlePublishEvent
+  | ArticleArchiveEvent
+  | ArticleDraftEvent;
+
+// ファクトリー関数でイベント作成（適切なコンストラクタ呼び出し）
+export const ArticleEventFactory = {
+  create: (
+    articleId: ArticleId,
+    eventData: CreateEventData
+  ): ArticleCreateEvent => new ArticleCreateEvent(articleId, eventData),
+
+  changeTitle: (
+    articleId: ArticleId,
+    eventData: TitleEventData
+  ): ArticleTitleChangeEvent =>
+    new ArticleTitleChangeEvent(articleId, eventData),
+
+  changeContent: (
+    articleId: ArticleId,
+    eventData: ContentEventData
+  ): ArticleContentChangeEvent =>
+    new ArticleContentChangeEvent(articleId, eventData),
+
+  publish: (articleId: ArticleId): ArticlePublishEvent =>
+    new ArticlePublishEvent(articleId),
+
+  archive: (articleId: ArticleId): ArticleArchiveEvent =>
+    new ArticleArchiveEvent(articleId),
+
+  draft: (articleId: ArticleId): ArticleDraftEvent =>
+    new ArticleDraftEvent(articleId),
+};
