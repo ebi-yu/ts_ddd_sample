@@ -3,13 +3,11 @@ export { Article } from "./Article.ts";
 
 // Domain Value Objects
 export { ArticleId } from "./vo/ArticleId.ts";
-export { ArticleStatus } from "./vo/ArticleStatus.ts";
 export { AuthorUserId } from "./vo/AuthorUserId.ts";
 export { Content } from "./vo/Content.ts";
 export { Title } from "./vo/Title.ts";
 
 // Domain Events
-export { ArticleEvent, EventType } from "./ArticleEvent.ts";
 export type {
   ContentEventData,
   CreateEventData,
