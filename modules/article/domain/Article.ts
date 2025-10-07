@@ -1,17 +1,19 @@
 import {
+  ArticleContentChangeEvent,
+  ArticleCreateEvent,
   ArticleEventFactory,
-  EVENT_TYPE,
+  ArticleTitleChangeEvent,
   type ArticleEvent,
-} from "./ArticleEvent.ts";
-import { ArticleId } from "./vo/ArticleId.ts";
-import type { AuthorUserId } from "./vo/AuthorUserId.ts";
-import type { Content } from "./vo/Content.ts";
-import type { Title } from "./vo/Title.ts";
+} from './ArticleEvent.ts';
+import { ArticleId } from './vo/ArticleId.ts';
+import type { AuthorId } from './vo/AuthorId.ts';
+import type { Content } from './vo/Content.ts';
+import type { Title } from './vo/Title.ts';
 
 export class Article {
   private constructor(
     private _events: ArticleEvent[] = [],
-    private _id: ArticleId = new ArticleId()
+    private _id: ArticleId = new ArticleId(),
   ) {}
 
   // 記事作成
@@ -19,16 +21,20 @@ export class Article {
     id: ArticleId;
     title: Title;
     content: Content;
-    authorId: AuthorUserId;
+    authorId: AuthorId;
   }): Article {
     const _article = new Article([], article.id);
 
     // イベント発行
-    const createEvent = ArticleEventFactory.create(article.id, {
-      title: article.title,
-      content: article.content,
-      authorId: article.authorId,
-    });
+    const createEvent = ArticleEventFactory.create(
+      article.id,
+      {
+        title: article.title,
+        content: article.content,
+        authorId: article.authorId,
+      },
+      1,
+    );
     // イベントの履歴を保存
     _article.apply(createEvent);
 
@@ -44,14 +50,18 @@ export class Article {
 
     // バリデーション
     if (currentTitle?.equals(newTitle)) {
-      throw new Error("新しいタイトルは現在のタイトルと同じです");
+      throw new Error('新しいタイトルは現在のタイトルと同じです');
     }
 
     // イベント発行
-    const changeTitleEvent = ArticleEventFactory.changeTitle(this._id, {
-      oldTitle: currentTitle,
-      newTitle,
-    });
+    const changeTitleEvent = ArticleEventFactory.changeTitle(
+      this._id,
+      {
+        oldTitle: currentTitle,
+        newTitle,
+      },
+      this.getVersion() + 1,
+    );
     // イベントの履歴を保存
     this.apply(changeTitleEvent);
 
@@ -65,14 +75,18 @@ export class Article {
 
     // バリデーション
     if (currentContent?.equals(newContent)) {
-      throw new Error("新しいコンテンツは現在のコンテンツと同じです");
+      throw new Error('新しいコンテンツは現在のコンテンツと同じです');
     }
 
     // イベント発行
-    const changeContentEvent = ArticleEventFactory.changeContent(this._id, {
-      oldContent: currentContent,
-      newContent,
-    });
+    const changeContentEvent = ArticleEventFactory.changeContent(
+      this._id,
+      {
+        oldContent: currentContent,
+        newContent,
+      },
+      this.getVersion() + 1,
+    );
     // イベントの履歴を保存
     this.apply(changeContentEvent);
 
@@ -83,11 +97,11 @@ export class Article {
   publish(): Article {
     // 内部ビジネスルール検証（ReadModel経由ではなく）
     if (!this.canPublishInternal()) {
-      throw new Error("記事を公開できません。タイトルとコンテンツが必要です。");
+      throw new Error('記事を公開できません。タイトルとコンテンツが必要です。');
     }
 
     // 公開イベントを発行
-    const publishEvent = ArticleEventFactory.publish(this._id);
+    const publishEvent = ArticleEventFactory.publish(this._id, this.getVersion() + 1);
     // イベントの履歴を保存
     this.apply(publishEvent);
 
@@ -97,7 +111,7 @@ export class Article {
   // アーカイブイベント
   archive(): Article {
     // イベント発行
-    const archiveEvent = ArticleEventFactory.archive(this._id);
+    const archiveEvent = ArticleEventFactory.archive(this._id, this.getVersion() + 1);
     // イベントの履歴を保存
     this.apply(archiveEvent);
 
@@ -105,11 +119,11 @@ export class Article {
   }
 
   // ドラフトに戻すイベント
-  draft(): Article {
+  reDraft(): Article {
     // イベント発行
-    const draftEvent = ArticleEventFactory.draft(this._id);
+    const reDraftEvent = ArticleEventFactory.reDraft(this._id, this.getVersion() + 1);
     // イベントの履歴を保存
-    this.apply(draftEvent);
+    this.apply(reDraftEvent);
 
     return this;
   }
@@ -123,9 +137,8 @@ export class Article {
   // タイトル取得
   getCurrentTitle(): Title | null {
     const titleEvents = this._events.filter(
-      (event) =>
-        event.type === EVENT_TYPE.CHANGE_TITLE ||
-        event.type === EVENT_TYPE.CREATE
+      (event): event is ArticleTitleChangeEvent | ArticleCreateEvent =>
+        event instanceof ArticleTitleChangeEvent || event instanceof ArticleCreateEvent,
     );
 
     if (titleEvents.length === 0) {
@@ -134,19 +147,18 @@ export class Article {
 
     const latestEvent = titleEvents[titleEvents.length - 1];
 
-    if (latestEvent.type === EVENT_TYPE.CREATE) {
-      return latestEvent.data.title; // ✅ 型安全！
-    } else {
-      return latestEvent.data.newTitle; // ✅ 型安全！
+    if (latestEvent instanceof ArticleCreateEvent) {
+      return latestEvent.getData().title;
     }
+
+    return latestEvent.getData().newTitle;
   }
 
   // コンテンツ取得
   getCurrentContent(): Content | null {
     const contentEvents = this._events.filter(
-      (event) =>
-        event.type === EVENT_TYPE.CHANGE_CONTENT ||
-        event.type === EVENT_TYPE.CREATE
+      (event): event is ArticleContentChangeEvent | ArticleCreateEvent =>
+        event instanceof ArticleContentChangeEvent || event instanceof ArticleCreateEvent,
     );
 
     if (contentEvents.length === 0) {
@@ -155,11 +167,11 @@ export class Article {
 
     const latestEvent = contentEvents[contentEvents.length - 1];
 
-    if (latestEvent.type === EVENT_TYPE.CREATE) {
-      return latestEvent.data.content; // ✅ 型安全！
-    } else {
-      return latestEvent.data.newContent; // ✅ 型安全！
+    if (latestEvent instanceof ArticleCreateEvent) {
+      return latestEvent.getData().content;
     }
+
+    return latestEvent.getData().newContent;
   }
 
   // 記事IDを取得
@@ -170,6 +182,10 @@ export class Article {
   // バージョン取得
   public getVersion(): number {
     return this._events.length;
+  }
+
+  getCurrentEvent(): ArticleEvent {
+    return this._events[this._events.length - 1];
   }
 
   /* --- ビジネスルール --- */

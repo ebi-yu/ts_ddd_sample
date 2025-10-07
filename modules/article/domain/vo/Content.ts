@@ -4,16 +4,14 @@ export class Content {
 
   constructor(value: string) {
     value = value.trim();
-    if (value.length === 0) {
-      throw new Error("Content cannot be empty");
-    }
-    if (value.length > this.MAX_LENGTH) {
-      throw new Error(
-        `Content cannot be longer than ${this.MAX_LENGTH} characters`
-      );
-    }
-
+    if (value.length === 0) throw new Error('Content cannot be empty');
+    if (value.length > this.MAX_LENGTH)
+      throw new Error(`Content cannot be longer than ${this.MAX_LENGTH} characters`);
     this._value = value;
+  }
+
+  get value(): string {
+    return this._value;
   }
 
   equals(other: Content): boolean {

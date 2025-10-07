@@ -7,14 +7,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model ArticleEvent {
-  id        String   @id @default(cuid())
+model ArticleEventEntity {
   articleId String
   eventType String
   eventData String   // イベントデータ（タイトル、コンテンツ、著者IDなど）をJSON形式で保存
   eventDate DateTime @default(now()) // イベント発生日時
-  version   Int
+  version   Int   // バージョン番号
 
   @@map("article_events")
-  @@index([articleId, version])
+  @@unique([articleId, version])
 }

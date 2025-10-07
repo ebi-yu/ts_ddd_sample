@@ -1,10 +1,11 @@
-import { email } from "zod";
+import { email } from 'zod';
 
 export class Email {
-  constructor(private _value: string) {
-    if (!this.isValid(_value)) {
-    }
-    this._value = _value;
+  private readonly _value: string;
+
+  constructor(value: string) {
+    this.assertValid(value);
+    this._value = value;
   }
 
   equals(other: Email): boolean {
@@ -15,10 +16,9 @@ export class Email {
     return this._value;
   }
 
-  private isValid(value: string): boolean {
+  private assertValid(value: string): void {
     try {
       email().parse(value);
-      return true;
     } catch {
       throw new Error(`Invalid email format: ${value}`);
     }

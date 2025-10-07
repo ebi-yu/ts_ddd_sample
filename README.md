@@ -1,14 +1,15 @@
-# About
+# 概要
 
-This Project is a sample implementation of Domain-Driven Design in Typescript.
+DDEを学習するためのリポジトリ
 
-## Used Frameworks
+## 使用技術
 
-- pnpm : package manager
-- hono.js : web framework
-- prisma.js : ORM
-- sqlite : database for writing
-- inversify.js : DI library
-- redis : database for reading
-- biome : code formatter
-- zod : validation
+- Hono.js : APIサーバフレームワーク
+- Apache Kafka : イベントストリーム
+- SQLite : コマンドクエリ分離におけるクエリ用DB
+- Redis : コマンドクエリ分離におけるコマンド用DB
+
+## TODO
+
+- 依存性の注入
+- Hono.jsのサーバー実装

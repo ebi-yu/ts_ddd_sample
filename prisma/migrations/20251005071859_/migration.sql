@@ -1,6 +1,5 @@
 -- CreateTable
 CREATE TABLE "article_events" (
-    "id" TEXT NOT NULL PRIMARY KEY,
     "articleId" TEXT NOT NULL,
     "eventType" TEXT NOT NULL,
     "eventData" TEXT NOT NULL,
@@ -9,4 +8,4 @@ CREATE TABLE "article_events" (
 );
 
 -- CreateIndex
-CREATE INDEX "article_events_articleId_version_idx" ON "article_events"("articleId", "version");
+CREATE UNIQUE INDEX "article_events_articleId_version_key" ON "article_events"("articleId", "version");

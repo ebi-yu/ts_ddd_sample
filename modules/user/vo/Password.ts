@@ -1,4 +1,4 @@
-import * as argon2 from "argon2";
+import * as argon2 from 'argon2';
 
 export class Password {
   private constructor(private readonly _hash: string) {}
@@ -40,16 +40,10 @@ export class Password {
   // バリデーション（強度チェック）
   private static validate(value: string): void {
     if (value.length < 8) {
-      throw new Error("Password must be at least 8 characters long");
+      throw new Error('Password must be at least 8 characters long');
     }
-    if (
-      !value.match(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/
-      )
-    ) {
-      throw new Error(
-        "Password must contain lowercase, uppercase, number, and special character"
-      );
+    if (!value.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/)) {
+      throw new Error('Password must contain lowercase, uppercase, number, and special character');
     }
   }
 }

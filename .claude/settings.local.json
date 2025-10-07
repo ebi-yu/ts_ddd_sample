@@ -1,8 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(redis-server:*)"
-    ],
+    "allow": ["Bash(redis-server:*)"],
     "deny": [],
     "ask": []
   }

@@ -1,7 +1,7 @@
-import type { Email } from "@shared/domain/vo/Email.ts";
-import type { Name } from "./vo/Name.ts";
-import type { Password } from "./vo/Password.ts";
-import type { UserId } from "./vo/UserId.ts";
+import type { Email } from '@shared/domain/vo/Email.ts';
+import type { Name } from './vo/Name.ts';
+import type { Password } from './vo/Password.ts';
+import type { UserId } from './vo/UserId.ts';
 
 export class User {
   constructor(
@@ -9,6 +9,6 @@ export class User {
     private _firstName: Name,
     private _lastName: Name,
     private _email: Email,
-    private _password: Password
+    private _password: Password,
   ) {}
 }
