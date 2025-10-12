@@ -47,7 +47,7 @@ const { schema: GetArticlesQuerySchema } = withOpenApiObject(GetArticlesQueryDto
   },
 });
 
-export const getArticlesRoute = createRoute({
+export const getArticlesRouteSchema = createRoute({
   method: 'get',
   path: '/articles',
   request: {

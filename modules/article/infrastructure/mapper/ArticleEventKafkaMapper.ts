@@ -1,4 +1,4 @@
-import type { ArticleEvent } from 'modules/article/domain/article_events/index.ts';
+import type { ArticleEvent } from 'modules/article/domain/events/index.ts';
 import {
   ArticleEventPrimitiveMapper,
   type ArticleEventPrimitive,

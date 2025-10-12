@@ -6,7 +6,7 @@ import {
   type ChangeTitleEventData,
   type CreateEventData,
   type EventType,
-} from 'modules/article/domain/article_events/index.ts';
+} from 'modules/article/domain/events/index.ts';
 import { ArticleId } from 'modules/article/domain/vo/ArticleId.ts';
 import { AuthorId } from 'modules/article/domain/vo/AuthorId.ts';
 import { Content } from 'modules/article/domain/vo/Content.ts';

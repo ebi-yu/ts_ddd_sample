@@ -1,10 +1,10 @@
 import { Dependency } from 'hono-simple-di';
 import { CreateArticleUseCase } from './application/CreateArtucleUseCase.ts';
 import { SearchArticleUseCase } from './application/SearchArticleUseCase.ts';
-import { ArticleController } from './infrastructure/controller/ArticleController.ts';
-import { createKafkaDomainEventPublisher } from './infrastructure/domain_event/index.ts';
+import { ArticleController } from './infrastructure/http/controller/ArticleController.ts';
+import { createKafkaDomainEventPublisher } from './infrastructure/messaging/index.ts';
+import { ArticleEventRepository } from './infrastructure/persistence/ArticleEventRepository.ts';
 import { ArticleReadModelQuery } from './infrastructure/readmodel/ArticleReadModelQuery.ts';
-import { ArticleEventRepository } from './infrastructure/repository/ArticleEventRepository.ts';
 
 export const articleDependencies = () => {
   const articleEventRepositoryDep = new Dependency(() => new ArticleEventRepository());

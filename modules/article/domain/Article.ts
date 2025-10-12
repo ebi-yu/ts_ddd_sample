@@ -4,7 +4,7 @@ import {
   ArticleEventFactory,
   ArticleTitleChangeEvent,
   type ArticleEvent,
-} from './article_events/index.ts';
+} from './events/index.ts';
 import { ArticleId } from './vo/ArticleId.ts';
 import { AuthorId } from './vo/AuthorId.ts';
 import type { Content } from './vo/Content.ts';

@@ -20,7 +20,7 @@ const { schema: CreateArticleRequestSchema } = withOpenApiObject(CreateArticleDt
   },
 });
 
-export const postArticleRoute = createRoute({
+export const postArticleRouteSchema = createRoute({
   method: 'post',
   path: '/articles',
   request: {

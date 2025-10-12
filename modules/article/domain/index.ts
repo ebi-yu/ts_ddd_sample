@@ -18,7 +18,7 @@ export {
   ArticleReDraftEvent,
   ArticleTitleChangeEvent,
   EVENT_TYPE,
-} from './article_events/index.ts';
+} from './events/index.ts';
 export type {
   ArticleBaseEventInit,
   ArticleContentChangeEventInit,
@@ -31,4 +31,4 @@ export type {
   CreateEventData,
   EventType,
   PersistedArticleEvent,
-} from './article_events/index.ts';
+} from './events/index.ts';

@@ -6,7 +6,7 @@ import {
   type ChangeContentEventData,
   type ChangeTitleEventData,
   type CreateEventData,
-} from 'modules/article/domain/article_events/index.ts';
+} from 'modules/article/domain/events/index.ts';
 import { RedisKeys, STATUS, type ArticleReadModel } from './ArticleReadModel.ts';
 
 /*

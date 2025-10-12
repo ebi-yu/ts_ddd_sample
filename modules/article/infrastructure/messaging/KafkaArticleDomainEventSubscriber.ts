@@ -1,5 +1,5 @@
 import { Kafka, type Producer } from 'kafkajs';
-import type { ArticleEvent } from 'modules/article/domain/article_events/index.ts';
+import type { ArticleEvent } from 'modules/article/domain/events/index.ts';
 import { parseArticleEventMessage } from '../mapper/ArticleEventKafkaMapper.ts';
 
 export type ArticleEventHandler = (event: ArticleEvent) => Promise<void>;

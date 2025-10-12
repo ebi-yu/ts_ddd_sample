@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { bootstrapArticleReadModelSubscriber } from 'modules/article/infrastructure/domain_event/index.ts';
+import { bootstrapArticleReadModelSubscriber } from 'modules/article/infrastructure/messaging/index.ts';
 
 /*
  * ドメインイベント購読処理を起動し、Kafkaに接続します。
