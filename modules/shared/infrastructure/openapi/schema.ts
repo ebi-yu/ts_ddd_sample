@@ -1,6 +1,6 @@
-import { type ZodTypeAny, z } from 'zod';
+import { z } from 'zod';
 
-type AnyZodObject = z.ZodObject<Record<string, ZodTypeAny>>;
+type AnyZodObject = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
 interface OpenApiObjectOptions {
   refId?: string;
@@ -24,8 +24,8 @@ export const withOpenApiObject = <T extends AnyZodObject>(
   let extended: AnyZodObject = schema;
 
   if (properties) {
-    const shape = schema.shape as Record<string, ZodTypeAny>;
-    const overrides: Record<string, ZodTypeAny> = {};
+    const shape = schema.shape as Record<string, z.ZodTypeAny>;
+    const overrides: Record<string, z.ZodTypeAny> = {};
 
     for (const [key, propertyMeta] of Object.entries(properties)) {
       const target = shape[key];

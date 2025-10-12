@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { GetArticlesQueryDtoSchema } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
+import { GetArticlesQueryDto } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
 import { ArticleReadModelDtoSchema } from 'modules/article/application/dto/output/ArticleReadModelDTO.ts';
 import { withOpenApiObject } from 'modules/shared/infrastructure/openapi/schema.ts';
 
@@ -15,51 +15,43 @@ const articleExample = {
   publishedAt: '2024-01-10T10:00:00.000Z',
 } as const;
 
-const { schema: ArticleReadModelSchema, example: articleSchemaExample } = withOpenApiObject(
-  ArticleReadModelDtoSchema,
-  {
-    refId: 'ArticleReadModel',
-    object: {
-      description: '記事読み取りモデルのスキーマ',
-      example: articleExample,
-    },
-    properties: {
-      id: { example: articleExample.id },
-      title: { example: articleExample.title },
-      content: { example: articleExample.content },
-      authorId: { example: articleExample.authorId },
-      status: { example: articleExample.status },
-      version: { example: articleExample.version },
-      createdAt: { example: articleExample.createdAt },
-      updatedAt: { example: articleExample.updatedAt },
-      publishedAt: { example: articleExample.publishedAt },
+const { schema: ArticleReadModelSchema } = withOpenApiObject(ArticleReadModelDtoSchema, {
+  refId: 'ArticleReadModel',
+  object: {
+    description: '記事読み取りモデルのスキーマ',
+    example: articleExample,
+  },
+  properties: {
+    id: { example: articleExample.id },
+    title: { example: articleExample.title },
+    content: { example: articleExample.content },
+    authorId: { example: articleExample.authorId },
+    status: { example: articleExample.status },
+    version: { example: articleExample.version },
+    createdAt: { example: articleExample.createdAt },
+    updatedAt: { example: articleExample.updatedAt },
+    publishedAt: { example: articleExample.publishedAt },
+  },
+});
+
+const { schema: GetArticlesQuerySchema } = withOpenApiObject(GetArticlesQueryDto, {
+  refId: 'GetArticlesQuery',
+  object: {
+    description: '記事取得クエリパラメータのスキーマ',
+    example: {
+      ids: ['c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050'],
     },
   },
-);
-
-const articleResponseExample =
-  (articleSchemaExample as typeof articleExample | undefined) ?? articleExample;
+  properties: {
+    ids: { example: ['c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050'] },
+  },
+});
 
 export const getArticlesRoute = createRoute({
   method: 'get',
   path: '/articles',
   request: {
-    query: z
-      .object({
-        'ids[]': GetArticlesQueryDtoSchema.shape.ids.openapi({
-          example: ['c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050'],
-          param: {
-            name: 'ids[]',
-            in: 'query',
-            required: true,
-            style: 'form',
-            explode: true,
-          },
-        }),
-      })
-      .openapi('GetArticlesQuery', {
-        description: '取得対象の記事 ID 配列',
-      }),
+    query: GetArticlesQuerySchema,
   },
   responses: {
     200: {
@@ -67,13 +59,16 @@ export const getArticlesRoute = createRoute({
       content: {
         'application/json': {
           schema: z.array(ArticleReadModelSchema).openapi({
-            example: [articleResponseExample],
+            example: [articleExample],
           }),
         },
       },
     },
     400: {
       description: 'リクエストパラメータが不正',
+    },
+    409: {
+      description: '同じ著者IDとタイトルの記事が既に存在します',
     },
   },
 });

@@ -37,7 +37,9 @@ export const postArticleRoute = createRoute({
       description: '記事の作成に成功',
       content: {
         'application/json': {
-          schema: z.null().openapi({ example: null }),
+          schema: {
+            id: z.string().openapi({ example: '550e8400-e29b-41d4-a716-446655440000' }),
+          },
         },
       },
     },

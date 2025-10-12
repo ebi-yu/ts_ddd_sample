@@ -6,3 +6,14 @@ Content-Type: application/json
   "content": "ドメイン駆動設計の基本を紹介します。",
   "authorId": "550e8400-e29b-41d4-a716-446655440000"
 }
+
+### バリデーションエラーの例
+
+POST http://localhost:3000/articles
+Content-Type: application/json
+
+{
+  "title": 111,
+  "content": "内容が空です。",
+  "authorId": "550e8400-e29b-41d4-a716-446655440000"
+}

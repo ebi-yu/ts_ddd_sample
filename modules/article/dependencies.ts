@@ -2,7 +2,7 @@ import { Dependency } from 'hono-simple-di';
 import { CreateArticleUseCase } from './application/CreateArtucleUseCase.ts';
 import { SearchArticleUseCase } from './application/SearchArticleUseCase.ts';
 import { ArticleController } from './infrastructure/controller/ArticleController.ts';
-import { createKafkaDomainEventPublisher } from './infrastructure/event/index.ts';
+import { createKafkaDomainEventPublisher } from './infrastructure/domain_event/index.ts';
 import { ArticleReadModelQuery } from './infrastructure/readmodel/ArticleReadModelQuery.ts';
 import { ArticleEventRepository } from './infrastructure/repository/ArticleEventRepository.ts';
 

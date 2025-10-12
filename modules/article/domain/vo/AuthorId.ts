@@ -1,5 +1,5 @@
 export class AuthorId {
-  public readonly _value: string;
+  private readonly _value: string;
 
   constructor(value: string) {
     if (!this.isValidUserId(value)) throw new Error('Invalid user ID');

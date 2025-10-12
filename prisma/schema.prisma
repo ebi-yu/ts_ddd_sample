@@ -8,12 +8,23 @@ generator client {
 }
 
 model ArticleEventEntity {
-  articleId String
-  eventType String
+  articleId String @db.Char(36)
+  authorId  String @db.Char(36)
+  eventType ArticleEventType
   eventData String   // イベントデータ（タイトル、コンテンツ、著者IDなど）をJSON形式で保存
-  eventDate DateTime @default(now()) // イベント発生日時
   version   Int   // バージョン番号
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("article_events")
   @@unique([articleId, version])
+}
+
+enum ArticleEventType {
+  CREATE
+  CHANGE_TITLE
+  CHANGE_CONTENT
+  PUBLISH
+  ARCHIVE
+  RE_DRAFT
 }

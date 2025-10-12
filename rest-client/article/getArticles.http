@@ -1,0 +1,12 @@
+GET http://localhost:3000/articles?ids=db4ffb69-7578-49f4-a63b-f0477c27f2bc
+Accept: application/json
+
+### Variation Error
+
+GET http://localhost:3000/articles?ids=1
+Accept: application/json
+
+### Not Found 
+
+GET http://localhost:3000/articles?ids=4b4ffb69-7578-49f4-a63b-f0477c27f2bc
+Accept: application/json

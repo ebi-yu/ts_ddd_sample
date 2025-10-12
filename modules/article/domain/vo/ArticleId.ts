@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 export class ArticleId {
-  public readonly _value: string;
+  private readonly _value: string;
 
   constructor(value?: string) {
     this._value = value ?? randomUUID();
@@ -12,10 +12,6 @@ export class ArticleId {
   }
 
   get value(): string {
-    return this._value;
-  }
-
-  toString(): string {
     return this._value;
   }
 }

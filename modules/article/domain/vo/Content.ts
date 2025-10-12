@@ -1,6 +1,6 @@
 export class Content {
-  public readonly _value: string;
-  public readonly MAX_LENGTH = 5000;
+  private readonly _value: string;
+  private readonly MAX_LENGTH = 5000;
 
   constructor(value: string) {
     value = value.trim();

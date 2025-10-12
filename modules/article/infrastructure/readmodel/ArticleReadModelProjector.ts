@@ -6,7 +6,7 @@ import {
   type ChangeContentEventData,
   type ChangeTitleEventData,
   type CreateEventData,
-} from 'modules/article/domain/ArticleEvent.ts';
+} from 'modules/article/domain/article_events/index.ts';
 import { RedisKeys, STATUS, type ArticleReadModel } from './ArticleReadModel.ts';
 
 /*
@@ -23,7 +23,7 @@ export class ArticleReadModelProjector implements IArticleReadModelProjector {
     await this.redis.connect();
     const client = this.redis.getClient();
 
-    const key = RedisKeys.article(event.getArticleId().toString());
+    const key = RedisKeys.article(event.getArticleId().value);
     const currentJson = await client.get(key);
     const current = currentJson ? (JSON.parse(currentJson) as ArticleReadModel) : null;
 
@@ -50,12 +50,12 @@ export class ArticleReadModelProjector implements IArticleReadModelProjector {
     const occurredAt = event.getEventDate().toISOString();
 
     if (event.getType() === EVENT_TYPE.CREATE) {
-      const { title, content, authorId } = event.getData() as CreateEventData;
+      const { title, content } = event.getData() as CreateEventData;
       return {
-        id: event.getArticleId().toString(),
+        id: event.getArticleId().value,
         title: title.value,
         content: content.value,
-        authorId: authorId.value,
+        authorId: event.getAuthorId().value,
         status: STATUS.DRAFT,
         version: event.getVersion(),
         createdAt: occurredAt,

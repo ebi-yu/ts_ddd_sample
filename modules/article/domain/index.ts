@@ -8,11 +8,27 @@ export { Content } from './vo/Content.ts';
 export { Title } from './vo/Title.ts';
 
 // Domain Events
+export {
+  ArticleArchiveEvent,
+  ArticleContentChangeEvent,
+  ArticleCreateEvent,
+  ArticleEventBase,
+  ArticleEventFactory,
+  ArticlePublishEvent,
+  ArticleReDraftEvent,
+  ArticleTitleChangeEvent,
+  EVENT_TYPE,
+} from './article_events/index.ts';
 export type {
+  ArticleBaseEventInit,
+  ArticleContentChangeEventInit,
+  ArticleCreateEventInit,
+  ArticleEvent,
+  ArticleEventBaseInit,
+  ArticleStatusEventInit,
   ChangeContentEventData,
   ChangeTitleEventData,
   CreateEventData,
-} from './ArticleEvent.ts';
-
-// 他コンテキストからは `Article` 集約と値オブジェクト群を利用し、
-// ドメインイベントはアプリケーション層のパブリッシャーを通じて扱う想定。
+  EventType,
+  PersistedArticleEvent,
+} from './article_events/index.ts';

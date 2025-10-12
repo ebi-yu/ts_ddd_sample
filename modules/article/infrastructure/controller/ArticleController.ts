@@ -1,4 +1,6 @@
 import type { CreateArticleDtoType } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
+import type { GetArticlesQueryDto } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
+import type { ArticleReadModelDTO } from 'modules/article/application/dto/output/ArticleReadModelDTO.ts';
 import type { ICreateArticleUseCase } from 'modules/article/application/interface/output/ICreateArticleUseCase.ts';
 import type { ISearchArticleUseCase } from 'modules/article/application/interface/output/ISearchArticleUseCase.ts';
 
@@ -8,11 +10,11 @@ export class ArticleController {
     private searchArticleUseCase: ISearchArticleUseCase,
   ) {}
 
-  getArticles(articleIds: string | string[]) {
-    return this.searchArticleUseCase.execute(Array.isArray(articleIds) ? articleIds : [articleIds]);
+  getArticles(articleIds: GetArticlesQueryDto): Promise<ArticleReadModelDTO[]> {
+    return this.searchArticleUseCase.execute(articleIds.ids);
   }
 
-  postArticle(article: CreateArticleDtoType) {
+  postArticle(article: CreateArticleDtoType): Promise<string> {
     return this.createArticleUseCase.execute(article);
   }
 }

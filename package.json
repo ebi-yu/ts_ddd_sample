@@ -3,17 +3,17 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -c \"magenta,cyan\" -n \"readmodel,server\" \"pnpm article:readmodel\" \"pnpm dev:api\"",
+    "dev": "concurrently -c \"magenta,cyan\" -n \"readmodel,server\" \"pnpm subscribe\" \"pnpm dev:api\"",
     "doc": "tsx scripts/generateOpenAPI.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev:api": "tsx server.ts",
+    "dev:api": "tsx watch server.ts",
     "migration": "prisma migrate dev",
     "lint": "oxlint --tsconfig tsconfig.json --deny-warnings .",
     "lint:fix": "oxlint --tsconfig tsconfig.json --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "article:readmodel": "tsx scripts/articleReadModelConsumer.ts"
+    "subscribe": "tsx scripts/subscribeDomainEvent"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
