@@ -3,16 +3,9 @@ import { Scalar } from '@scalar/hono-api-reference';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
 import packageJson from '../package.json' with { type: 'json' };
-import { CreateArticleDto } from './article/application/dto/input/CreateArticleDTO.ts';
-import { GetArticlesQueryDto } from './article/application/dto/input/GetArticlesQueryDto.ts';
-import { articleDependencies } from './article/dependencies.ts';
-import { ArticleController } from './article/infrastructure/controller/ArticleController.ts';
-import { getArticlesRoute } from './article/infrastructure/openapi/routes/getArticlesRoute.ts';
-import { postArticleRoute } from './article/infrastructure/openapi/routes/postArticleRoute.ts';
+import { registerArticleModule, type ArticleAppBindings } from './article/index.ts';
 
-const { articleControllerDep } = articleDependencies();
-
-const app = new OpenAPIHono<{ Variables: { articleController: ArticleController } }>({
+const app = new OpenAPIHono<ArticleAppBindings>({
   // バリデーションエラー時の共通エラーハンドリング
   defaultHook: (result, c) => {
     const formatZodErrors = (result: any) => {
@@ -51,7 +44,7 @@ app.onError((err, c) => {
   return c.json({ message: 'Unexpected error', cause: err.cause ?? {} }, 500);
 });
 
-app.use('*', articleControllerDep.middleware('articleController'));
+// サンプルエンドポイント
 app.get('/', (c) => c.json({ message: 'Hello, World!' }));
 
 // ドキュメントサーバー
@@ -61,22 +54,6 @@ app.doc31('/docs', {
 }); // new endpoint
 app.get('/scalar', Scalar({ url: '/docs' }));
 
-// 記事取得エンドポイント
-app.openapi(getArticlesRoute, async (c) => {
-  const articleController = c.get('articleController');
-
-  const params = c.req.query();
-  const parsed = GetArticlesQueryDto.parse(params);
-  const articles = await articleController.getArticles(parsed);
-  return c.json(articles);
-});
-
-// 記事投稿エンドポイント
-app.openapi(postArticleRoute, async (c) => {
-  const articleController = c.get('articleController');
-  const payload = CreateArticleDto.parse(await c.req.json());
-  const articleId = await articleController.postArticle(payload);
-  return c.json({ id: articleId }, 201);
-});
+registerArticleModule(app);
 
 export default app;
