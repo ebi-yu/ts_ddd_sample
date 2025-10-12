@@ -4,18 +4,25 @@ export const STATUS = {
   ARCHIVED: 'archived',
 } as const;
 
-export type ArticleStatus = (typeof STATUS)[keyof typeof STATUS];
-
+// 読み取り専用の記事モデルの型
 export interface ArticleReadModel {
-  id: string; // ArticleId (UUID)
+  id: string;
   title: string | null;
   content: string | null;
   authorId: string;
   status: ArticleStatus;
-  version: number; // 楽観的ロック用
-  createdAt: string; // ISO string
-  updatedAt: string; // ISO string
-  publishedAt?: string; // 公開日時 (公開済みの場合のみ)
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
+
+export type ArticleStatus = (typeof STATUS)[keyof typeof STATUS];
+
+// 統計情報用の型
+export interface ArticleStats {
+  viewCount: number;
+  lastViewedAt?: string;
 }
 
 // Redis キー生成用のユーティリティ型
@@ -32,9 +39,3 @@ export const RedisKeys = {
   articleStats: (articleId: string): ArticleStatsKey => `article:${articleId}:stats`,
   allArticles: () => 'articles:all' as const,
 } as const;
-
-// 統計情報用の型
-export interface ArticleStats {
-  viewCount: number;
-  lastViewedAt?: string;
-}

@@ -1,5 +1,5 @@
 import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
-import type { IArticleReadModelProjector } from 'modules/article/application/interface/IArticleReadModelProjector.ts';
+import type { IArticleReadModelProjector } from 'modules/article/application/interface/input/IArticleReadModelProjector.ts';
 import {
   EVENT_TYPE,
   type ArticleEvent,
@@ -9,9 +9,16 @@ import {
 } from 'modules/article/domain/ArticleEvent.ts';
 import { RedisKeys, STATUS, type ArticleReadModel } from './ArticleReadModel.ts';
 
+/*
+ * 記事のReadModel(読み取り用モデル)の更新用
+ * Redis上に存在する記事のReadModel(読み取り用モデル)を記事のドメインイベントに基づいて更新する
+ */
 export class ArticleReadModelProjector implements IArticleReadModelProjector {
   constructor(private readonly redis = RedisClient.getInstance()) {}
 
+  /*
+   * Redis上に存在する記事のReadModel(読み取り用モデル)を記事のドメインイベントに基づいて更新する
+   */
   async project(event: ArticleEvent): Promise<void> {
     await this.redis.connect();
     const client = this.redis.getClient();
@@ -36,6 +43,9 @@ export class ArticleReadModelProjector implements IArticleReadModelProjector {
     );
   }
 
+  /*
+   * 現在の状態とイベントに基づいて次のReadModelの状態を構築する
+   */
   private buildNextState(current: ArticleReadModel | null, event: ArticleEvent): ArticleReadModel {
     const occurredAt = event.getEventDate().toISOString();
 

@@ -1,4 +1,5 @@
 import { Article, ArticleId, AuthorId, Content, Title } from '../domain/index.ts';
+import type { CreateArticleDtoType } from './dto/input/CreateArticleDTO.ts';
 import type { IArticleRepository } from './interface/input/IArticleEventRepository.ts';
 import type { IDomainEventPublisher } from './interface/input/IDomainEventPublisher.ts';
 import type { ICreateArticleUseCase } from './interface/output/ICreateArticleUseCase.ts';
@@ -11,7 +12,7 @@ export class CreateArticleUseCase implements ICreateArticleUseCase {
     private readonly domainEventPublisher: IDomainEventPublisher,
   ) {}
 
-  async execute(article: { title: string; content: string; authorId: string }): Promise<void> {
+  async execute(article: CreateArticleDtoType): Promise<void> {
     // Articleエンティティの生成
     const newArticle = Article.create({
       id: new ArticleId(),

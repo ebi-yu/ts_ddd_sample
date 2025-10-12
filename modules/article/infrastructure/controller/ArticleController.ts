@@ -1,3 +1,4 @@
+import type { CreateArticleDtoType } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
 import type { ICreateArticleUseCase } from 'modules/article/application/interface/output/ICreateArticleUseCase.ts';
 import type { ISearchArticleUseCase } from 'modules/article/application/interface/output/ISearchArticleUseCase.ts';
 
@@ -11,7 +12,7 @@ export class ArticleController {
     return this.searchArticleUseCase.execute(Array.isArray(articleIds) ? articleIds : [articleIds]);
   }
 
-  postArticle(article: { title: string; content: string; authorId: string }) {
+  postArticle(article: CreateArticleDtoType) {
     return this.createArticleUseCase.execute(article);
   }
 }

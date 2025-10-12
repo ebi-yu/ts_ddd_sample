@@ -20,6 +20,9 @@ export type SerializedArticleEvent = {
   data: Record<string, unknown>;
 };
 
+/*
+ * ArticleEventをKafkaで送受信可能な形式にシリアライズ(変換)する
+ */
 export function serializeArticleEvent(event: ArticleEvent): SerializedArticleEvent {
   const base = {
     articleId: event.getArticleId().value,
@@ -70,6 +73,9 @@ export function serializeArticleEvent(event: ArticleEvent): SerializedArticleEve
   }
 }
 
+/*
+ * Kafkaで送受信した形式のデータをArticleEventにデシリアライズ(復元)する
+ */
 export function deserializeArticleEvent(serialized: SerializedArticleEvent): ArticleEvent {
   const articleId = new ArticleId(serialized.articleId);
   const occurredAt = new Date(serialized.occurredAt);

@@ -2,12 +2,19 @@ import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
 import {
   type ArticleReadModelDTO,
   type IArticleReadModelQuery,
-} from '../../application/interface/IArticleReadModelQuery.ts';
+} from '../../application/interface/input/IArticleReadModelQuery.ts';
 import { RedisKeys, type ArticleReadModel } from './ArticleReadModel.ts';
 
+/*
+ * 記事の取得用
+ * Redisから記事のReadModel(読み取り用モデル)を取得する
+ */
 export class ArticleReadModelQuery implements IArticleReadModelQuery {
   constructor(private readonly redis = RedisClient.getInstance()) {}
 
+  /*
+   * 記事IDに紐づく記事のReadModel(読み取り用モデル)を取得する
+   */
   async findManyByIds(articleIds: string[]): Promise<ArticleReadModelDTO[]> {
     await this.redis.connect();
     const client = this.redis.getClient();

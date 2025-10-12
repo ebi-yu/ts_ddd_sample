@@ -3,7 +3,7 @@ CREATE TABLE "article_events" (
     "articleId" TEXT NOT NULL,
     "eventType" TEXT NOT NULL,
     "eventData" TEXT NOT NULL,
-    "eventDate" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "eventDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "version" INTEGER NOT NULL
 );
 

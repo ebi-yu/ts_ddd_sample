@@ -1,0 +1,8 @@
+POST http://localhost:3000/articles
+Content-Type: application/json
+
+{
+  "title": "Domain-Driven Design 入門",
+  "content": "ドメイン駆動設計の基本を紹介します。",
+  "authorId": "550e8400-e29b-41d4-a716-446655440000"
+}

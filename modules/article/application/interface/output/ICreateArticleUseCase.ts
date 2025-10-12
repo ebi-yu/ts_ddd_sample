@@ -1,3 +1,5 @@
+import type { CreateArticleDtoType } from '../../dto/input/CreateArticleDTO.ts';
+
 export interface ICreateArticleUseCase {
-  execute(article: { title: string; content: string; authorId: string }): Promise<void>;
+  execute(article: CreateArticleDtoType): Promise<void>;
 }

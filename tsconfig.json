@@ -8,7 +8,6 @@
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["node"],
-    "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "experimentalDecorators": true,

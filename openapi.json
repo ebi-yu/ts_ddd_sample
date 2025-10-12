@@ -1,0 +1,205 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DDD Sample API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "ArticleReadModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Domain-Driven Design 入門"
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "ドメイン駆動設計の基本コンセプトを解説します。"
+          },
+          "authorId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "example": "draft"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 3
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2024-01-01T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2024-01-05T10:00:00.000Z"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2024-01-10T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "authorId",
+          "status",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "description": "記事読み取りモデルのスキーマ",
+        "example": {
+          "id": "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050",
+          "title": "Domain-Driven Design 入門",
+          "content": "ドメイン駆動設計の基本コンセプトを解説します。",
+          "authorId": "550e8400-e29b-41d4-a716-446655440000",
+          "status": "draft",
+          "version": 3,
+          "createdAt": "2024-01-01T10:00:00.000Z",
+          "updatedAt": "2024-01-05T10:00:00.000Z",
+          "publishedAt": "2024-01-10T10:00:00.000Z"
+        }
+      },
+      "CreateArticleRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Domain-Driven Design 入門"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "example": "ドメイン駆動設計の基本を紹介します。"
+          },
+          "authorId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "authorId"
+        ],
+        "description": "記事作成リクエストボディ",
+        "example": {
+          "title": "Domain-Driven Design 入門",
+          "content": "ドメイン駆動設計の基本を紹介します。",
+          "authorId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/articles": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 1,
+              "example": [
+                "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050"
+              ]
+            },
+            "required": true,
+            "name": "ids[]",
+            "in": "query",
+            "style": "form",
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "記事の取得に成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArticleReadModel"
+                  },
+                  "example": [
+                    {
+                      "id": "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050",
+                      "title": "Domain-Driven Design 入門",
+                      "content": "ドメイン駆動設計の基本コンセプトを解説します。",
+                      "authorId": "550e8400-e29b-41d4-a716-446655440000",
+                      "status": "draft",
+                      "version": 3,
+                      "createdAt": "2024-01-01T10:00:00.000Z",
+                      "updatedAt": "2024-01-05T10:00:00.000Z",
+                      "publishedAt": "2024-01-10T10:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストパラメータが不正"
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "記事の作成に成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null",
+                  "example": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストボディが不正"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

@@ -4,6 +4,12 @@ import { parseArticleEventMessage } from './ArticleEventKafkaMapper.ts';
 
 export type ArticleEventHandler = (event: ArticleEvent) => Promise<void>;
 
+/*
+ * Kafkaを利用した記事のドメインイベント購読
+ * @param brokerList Kafkaブローカーのリスト
+ * @param topic 購読するKafkaトピック
+ * @param groupId コンシューマグループID
+ */
 export class KafkaArticleEventSubscriber {
   private readonly topic: string;
   private readonly groupId: string;
@@ -15,6 +21,9 @@ export class KafkaArticleEventSubscriber {
     this.groupId = groupId;
   }
 
+  /*
+   * 指定されたハンドラで記事のドメインイベントを購読する
+   */
   async subscribe(handler: ArticleEventHandler): Promise<void> {
     const kafka = new Kafka({ brokers: this.brokerList });
     const consumer = kafka.consumer({ groupId: this.groupId });

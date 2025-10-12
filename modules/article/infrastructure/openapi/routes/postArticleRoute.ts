@@ -1,0 +1,48 @@
+import { createRoute } from '@hono/zod-openapi';
+import { CreateArticleDto } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
+import { withOpenApiObject } from 'modules/shared/infrastructure/openapi/schema.ts';
+import { z } from 'zod';
+
+const { schema: CreateArticleRequestSchema } = withOpenApiObject(CreateArticleDto, {
+  refId: 'CreateArticleRequest',
+  object: {
+    description: '記事作成リクエストボディ',
+    example: {
+      title: 'Domain-Driven Design 入門',
+      content: 'ドメイン駆動設計の基本を紹介します。',
+      authorId: '550e8400-e29b-41d4-a716-446655440000',
+    },
+  },
+  properties: {
+    title: { example: 'Domain-Driven Design 入門' },
+    content: { example: 'ドメイン駆動設計の基本を紹介します。' },
+    authorId: { example: '550e8400-e29b-41d4-a716-446655440000' },
+  },
+});
+
+export const postArticleRoute = createRoute({
+  method: 'post',
+  path: '/articles',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateArticleRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: '記事の作成に成功',
+      content: {
+        'application/json': {
+          schema: z.null().openapi({ example: null }),
+        },
+      },
+    },
+    400: {
+      description: 'リクエストボディが不正',
+    },
+  },
+});

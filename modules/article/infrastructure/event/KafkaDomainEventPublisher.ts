@@ -1,9 +1,12 @@
 import type { Producer } from 'kafkajs';
 import { Kafka } from 'kafkajs';
-import type { IDomainEventPublisher } from 'modules/article/application/interface/IDomainEventPublisher.ts';
+import type { IDomainEventPublisher } from 'modules/article/application/interface/input/IDomainEventPublisher.ts';
 import type { ArticleEvent } from 'modules/article/domain/ArticleEvent.ts';
 import { serializeArticleEvent } from './ArticleEventKafkaMapper.ts';
 
+/*
+ * Kafkaを利用した記事のドメインイベント発行
+ */
 export class KafkaDomainEventPublisher implements IDomainEventPublisher {
   private readonly producer: Producer;
   private readonly topic: string;

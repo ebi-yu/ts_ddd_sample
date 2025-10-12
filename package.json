@@ -3,9 +3,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "concurrently -c \"magenta,cyan\" -n \"readmodel,server\" \"pnpm article:readmodel\" \"pnpm dev:api\"",
+    "doc": "tsx scripts/generateOpenAPI.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "dev:api": "tsx server.ts",
     "migration": "prisma migrate dev",
     "lint": "oxlint --tsconfig tsconfig.json --deny-warnings .",
     "lint:fix": "oxlint --tsconfig tsconfig.json --fix .",
@@ -15,9 +17,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
+    "@hono/zod-openapi": "^1.1.3",
     "@prisma/client": "^6.14.0",
+    "@scalar/hono-api-reference": "^0.9.21",
     "argon2": "^0.44.0",
-    "better-sqlite3": "^12.2.0",
+    "dotenv": "^16.4.5",
     "hono": "^4.9.4",
     "hono-simple-di": "^0.2.1",
     "inversify": "^7.9.0",
@@ -29,6 +33,7 @@
   "devDependencies": {
     "@types/inversify": "^2.0.33",
     "@types/node": "^20.11.17",
+    "concurrently": "^8.2.2",
     "oxlint": "^1.20.0",
     "prettier": "^3.6.2",
     "prisma": "^6.14.0",

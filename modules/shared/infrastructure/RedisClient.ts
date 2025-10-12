@@ -1,14 +1,17 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient, type RedisClientType } from 'redis';
 
 export class RedisClient {
   private static instance: RedisClient;
   private client: RedisClientType;
 
   private constructor() {
+    const host = process.env.REDIS_HOST ?? 'localhost';
+    const port = process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379;
+
     this.client = createClient({
       socket: {
-        host: 'localhost',
-        port: 6379,
+        host,
+        port,
       },
     });
 
@@ -44,7 +47,6 @@ export class RedisClient {
     return this.client;
   }
 
-  // よく使うRedis操作のヘルパーメソッド
   public async set(key: string, value: string): Promise<void> {
     await this.client.set(key, value);
   }
