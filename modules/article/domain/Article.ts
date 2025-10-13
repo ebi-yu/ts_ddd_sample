@@ -106,7 +106,7 @@ export class Article {
   publish(): Article {
     // 内部ビジネスルール検証（ReadModel経由ではなく）
     if (!this.canPublishInternal()) {
-      throw new Error('記事を公開できません。タイトルとコンテンツが必要です。');
+      throw new Error('Cannot publish Article: title or content is missing');
     }
 
     // 公開イベントを発行
@@ -149,7 +149,40 @@ export class Article {
     return this;
   }
 
+  static rehydrate(events: ArticleEvent[]): Article {
+    if (events.length === 0) {
+      throw new Error('Cannot rehydrate Article without events');
+    }
+
+    const orderedEvents = [...events].sort((left, right) => left.getVersion() - right.getVersion());
+    const firstEvent = orderedEvents[0];
+    const articleId = firstEvent.getArticleId();
+    const authorId = firstEvent.getAuthorId();
+
+    const article = new Article([], articleId, authorId);
+
+    for (const event of orderedEvents) {
+      if (!event.getArticleId().equals(articleId)) {
+        throw new Error('Inconsistent Article ID in event stream');
+      }
+      if (!event.getAuthorId().equals(authorId)) {
+        throw new Error('Inconsistent Author ID in event stream');
+      }
+
+      article.apply(event);
+    }
+
+    return article;
+  }
+
   private apply(event: ArticleEvent): void {
+    const expectedVersion = this._events.length + 1;
+    if (event.getVersion() !== expectedVersion) {
+      throw new Error(
+        `Invalid event version: expected ${expectedVersion}, received ${event.getVersion()}`,
+      );
+    }
+
     this._events.push(event);
   }
 

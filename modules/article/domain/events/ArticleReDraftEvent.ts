@@ -1,7 +1,7 @@
-import { ArticleEventBase, EVENT_TYPE, type ArticleStatusEventInit } from './ArticleEventBase.ts';
+import { ArticleEventBase, EVENT_TYPE, type ArticleBaseEventInit } from './ArticleEventBase.ts';
 
 export class ArticleReDraftEvent extends ArticleEventBase<undefined> {
-  constructor({ articleId, authorId, version, eventDate }: ArticleStatusEventInit) {
+  constructor({ articleId, authorId, version, eventDate }: ArticleBaseEventInit) {
     super({ articleId, authorId, type: EVENT_TYPE.RE_DRAFT, version, eventDate });
   }
 

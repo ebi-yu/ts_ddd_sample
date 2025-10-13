@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { Article } from './Article.ts';
 import { EVENT_TYPE } from './events/ArticleEventBase.ts';
+import { ArticleEventFactory } from './events/ArticleEventFactory.ts';
 import { ArticleId } from './vo/ArticleId.ts';
 import { AuthorId } from './vo/AuthorId.ts';
 import { Content } from './vo/Content.ts';
@@ -176,5 +177,97 @@ describe('バリデーションと冪等性', () => {
     expect(result).toBe(article);
     expect(article.getVersion()).toBe(beforeVersion);
     expect(article.getCurrentEvent()).toBe(beforeEvent);
+  });
+});
+
+describe('再構築', () => {
+  it('イベント列が与えられると、順序に関わらず再構築され、最新状態が返る', () => {
+    // Arrange
+    const articleId = new ArticleId('1c8a9b6f-6e8d-4b12-8b4b-9cd7e2a4f123');
+    const authorId = new AuthorId('2f3a4b5c-6d7e-4f8a-9b1c-2d3e4f5a6b7c');
+    const initialTitle = new Title('Initial Title');
+    const updatedTitle = new Title('Updated Title');
+    const content = new Content('Persistent content body.');
+    const createdAt = new Date('2024-01-01T00:00:00Z');
+    const updatedAt = new Date('2024-02-01T00:00:00Z');
+
+    const createEvent = ArticleEventFactory.create({
+      articleId,
+      authorId,
+      data: { title: initialTitle, content },
+      version: 1,
+      eventDate: createdAt,
+    });
+    const changeTitleEvent = ArticleEventFactory.changeTitle({
+      articleId,
+      authorId,
+      data: { oldTitle: initialTitle, newTitle: updatedTitle },
+      version: 2,
+      eventDate: updatedAt,
+    });
+
+    // Act
+    const rehydrated = Article.rehydrate([changeTitleEvent, createEvent]);
+
+    // Assert
+    expect(rehydrated.getVersion()).toBe(2);
+    expect(rehydrated.getCurrentTitle()?.value).toBe(updatedTitle.value);
+    expect(rehydrated.getCurrentContent()?.value).toBe(content.value);
+    expect(rehydrated.getCurrentEvent().getEventDate().toISOString()).toBe(
+      updatedAt.toISOString(),
+    );
+  });
+
+  it('バージョンが飛んだイベント列が与えられると、再構築時に例外が返る', () => {
+    // Arrange
+    const articleId = new ArticleId('7a8b9c0d-1e2f-4a5b-8c9d-0e1f2a3b4c5d');
+    const authorId = new AuthorId('0d9c8b7a-6f5e-4d3c-8b1a-0f9e8d7c6b5a');
+    const title = new Title('Gap Title');
+    const content = new Content('Gap content body.');
+
+    const createEvent = ArticleEventFactory.create({
+      articleId,
+      authorId,
+      data: { title, content },
+      version: 1,
+    });
+    const invalidChange = ArticleEventFactory.changeContent({
+      articleId,
+      authorId,
+      data: { oldContent: content, newContent: new Content('Changed') },
+      version: 3,
+    });
+
+    // Act
+    const act = () => Article.rehydrate([createEvent, invalidChange]);
+
+    // Assert
+    expect(act).toThrowError('Invalid event version: expected 2, received 3');
+  });
+
+  it('異なる記事IDのイベントが含まれると、再構築時に例外が返る', () => {
+    // Arrange
+    const articleId = new ArticleId('5b6c7d8e-9f0a-4b3c-8d7e-6f5a4b3c2d1e');
+    const authorId = new AuthorId('1e2d3c4b-5a6f-4e8d-9c0b-1a2d3f4e5c6b');
+    const title = new Title('Mismatch Title');
+    const content = new Content('Mismatch content.');
+
+    const createEvent = ArticleEventFactory.create({
+      articleId,
+      authorId,
+      data: { title, content },
+      version: 1,
+    });
+    const mismatchedEvent = ArticleEventFactory.publish({
+      articleId: new ArticleId('9e8d7c6b-5a4d-3c2b-8a0f-9e8d7c6b5a4d'),
+      authorId,
+      version: 2,
+    });
+
+    // Act
+    const act = () => Article.rehydrate([createEvent, mismatchedEvent]);
+
+    // Assert
+    expect(act).toThrowError('Inconsistent Article ID in event stream');
   });
 });

@@ -1,10 +1,17 @@
+import { isUuid } from '@shared/domain/validator/Uuid.ts';
 import { randomUUID } from 'crypto';
 
 export class ArticleId {
   private readonly _value: string;
 
   constructor(value?: string) {
-    this._value = value ?? randomUUID();
+    if (value !== undefined) {
+      if (!isUuid(value)) throw new Error('Invalid Article ID');
+      this._value = value;
+      return;
+    }
+
+    this._value = randomUUID();
   }
 
   equals(other: ArticleId): boolean {

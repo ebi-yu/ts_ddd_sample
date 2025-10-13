@@ -1,27 +1,12 @@
 import { ArticleEventType, PrismaClient } from '@prisma/client';
 import type { IArticleRepository } from 'modules/article/application/adapters/outbound/IArticleEventRepository.ts';
-import type { Article } from 'modules/article/domain/Article.ts';
+import { Article } from 'modules/article/domain/Article.ts';
 import type { ArticleId } from 'modules/article/domain/index.ts';
+import { EVENT_TYPE, type EventType } from 'modules/article/domain/events/ArticleEventBase.ts';
+import type { CreateEventData } from 'modules/article/domain/events/ArticleCreateEvent.ts';
+import type { ChangeTitleEventData } from 'modules/article/domain/events/ArticleTitleChangeEvent.ts';
 import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
-
-const resolveTitle = (eventType: ArticleEventType, rawEventData: string): string | null => {
-  const parsed = safeJsonParse(rawEventData);
-  if (!parsed || typeof parsed !== 'object') {
-    return null;
-  }
-
-  const data = parsed as Record<string, unknown>;
-
-  if (eventType === ArticleEventType.CREATE) {
-    return extractTitleValue(data['title']);
-  }
-
-  if (eventType === ArticleEventType.CHANGE_TITLE) {
-    return extractTitleValue(data['newTitle']);
-  }
-
-  return null;
-};
+import type { ArticleEventPrimitive } from '../mapper/ArticleEventPrimitiveMapper.ts';
 
 const safeJsonParse = (value: string): unknown => {
   try {
@@ -31,41 +16,22 @@ const safeJsonParse = (value: string): unknown => {
   }
 };
 
-const extractTitleValue = (raw: unknown): string | null => {
-  const trimOrNull = (value: string | null): string | null => {
-    if (value === null) return null;
-    const trimmed = value.trim();
-    return trimmed.length === 0 ? null : trimmed;
-  };
-
-  if (typeof raw === 'string') {
-    return trimOrNull(raw);
-  }
-
-  if (raw && typeof raw === 'object' && '_value' in raw) {
-    const candidate = (raw as { _value?: unknown })._value;
-    if (typeof candidate === 'string') {
-      return trimOrNull(candidate);
-    }
-  }
-
-  return null;
-};
-
 // NOTE : データの永続化自体はPostgreSQLを利用するが、データの読み取りにはRedisを利用する
 // そのため、記事のReadModel(読み取り用モデル)の更新はRedisに対して行い、記事のドメインイベントの保存はPostgreSQLに対して行う
 // これにより、読み取りと書き込みの責務を分離(CQRS)し、システムのパフォーマンスとスケーラビリティを向上させることができる
 
-const database = new PrismaClient();
+const defaultPrismaClient = new PrismaClient();
 
 export class ArticleEventRepository implements IArticleRepository {
+  constructor(private readonly prisma: PrismaClient = defaultPrismaClient) {}
+
   /*
    * 記事のドメインイベントを保存する
    */
   async create(article: Article): Promise<void> {
     const primitive = ArticleEventPrimitiveMapper.toPrimitive(article.getCurrentEvent());
 
-    await database.articleEventEntity.create({
+    await this.prisma.articleEventEntity.create({
       data: {
         articleId: article.getId().value,
         authorId: article.getAuthorId().value,
@@ -76,6 +42,37 @@ export class ArticleEventRepository implements IArticleRepository {
     });
   }
 
+  async findById(articleId: ArticleId): Promise<Article | null> {
+    const persistedEvents = await this.prisma.articleEventEntity.findMany({
+      where: { articleId: articleId.value },
+      orderBy: [{ version: 'asc' }],
+    });
+
+    if (persistedEvents.length === 0) {
+      return null;
+    }
+
+    const domainEvents = persistedEvents.map((persisted) => {
+      const parsedData = safeJsonParse(persisted.eventData);
+      if (!parsedData || typeof parsedData !== 'object') {
+        throw new Error('Invalid event payload stored for Article');
+      }
+
+      const primitive: ArticleEventPrimitive = {
+        articleId: persisted.articleId,
+        authorId: persisted.authorId,
+        type: persisted.eventType as EventType,
+        version: persisted.version,
+        occurredAt: persisted.createdAt.toISOString(),
+        data: parsedData as Record<string, unknown>,
+      };
+
+      return ArticleEventPrimitiveMapper.fromPrimitive(primitive);
+    });
+
+    return Article.rehydrate(domainEvents);
+  }
+
   async checkDuplicate({ authorId, title }: { authorId: string; title: string }): Promise<boolean> {
     const normalizedTitle = title.trim();
 
@@ -83,7 +80,7 @@ export class ArticleEventRepository implements IArticleRepository {
       return false;
     }
 
-    const events = await database.articleEventEntity.findMany({
+    const events = await this.prisma.articleEventEntity.findMany({
       where: {
         authorId,
         eventType: {
@@ -91,11 +88,6 @@ export class ArticleEventRepository implements IArticleRepository {
         },
       },
       orderBy: [{ articleId: 'asc' }, { version: 'desc' }],
-      select: {
-        articleId: true,
-        eventType: true,
-        eventData: true,
-      },
     });
 
     const processed = new Set<string>();
@@ -104,7 +96,33 @@ export class ArticleEventRepository implements IArticleRepository {
         continue;
       }
 
-      const candidateTitle = resolveTitle(event.eventType, event.eventData);
+      const parsedData = safeJsonParse(event.eventData);
+      if (!parsedData || typeof parsedData !== 'object') {
+        continue;
+      }
+
+      const primitive: ArticleEventPrimitive = {
+        articleId: event.articleId,
+        authorId: event.authorId,
+        type: event.eventType as EventType,
+        version: event.version,
+        occurredAt: event.createdAt.toISOString(),
+        data: parsedData as Record<string, unknown>,
+      };
+
+      const domainEvent = ArticleEventPrimitiveMapper.fromPrimitive(primitive);
+      let candidateTitle: string | null = null;
+
+      if (domainEvent.getType() === EVENT_TYPE.CREATE) {
+        const { title } = domainEvent.getData() as CreateEventData;
+        candidateTitle = title.value;
+      }
+
+      if (domainEvent.getType() === EVENT_TYPE.CHANGE_TITLE) {
+        const { newTitle } = domainEvent.getData() as ChangeTitleEventData;
+        candidateTitle = newTitle.value;
+      }
+
       if (candidateTitle === null) {
         continue;
       }
@@ -123,7 +141,7 @@ export class ArticleEventRepository implements IArticleRepository {
    * 指定された記事IDに紐づく記事のドメインイベントをすべて削除する
    */
   async deleteAll(articleId: ArticleId): Promise<void> {
-    await database.articleEventEntity.deleteMany({
+    await this.prisma.articleEventEntity.deleteMany({
       where: {
         articleId: articleId.value,
       },

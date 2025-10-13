@@ -1,6 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Scalar } from '@scalar/hono-api-reference';
-import { HTTPException } from 'hono/http-exception';
+import { BaseException } from '@shared/error/BaseException.ts';
 import { ZodError } from 'zod';
 import packageJson from '../package.json' with { type: 'json' };
 import { registerArticleModule, type ArticleAppBindings } from './article/index.ts';
@@ -31,7 +31,7 @@ const app = new OpenAPIHono<ArticleAppBindings>({
 });
 //　その他のエラーハンドリング
 app.onError((err, c) => {
-  if (err instanceof HTTPException) {
+  if (err instanceof BaseException) {
     return c.json(
       {
         message: err.message,

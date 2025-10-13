@@ -20,12 +20,9 @@ export {
   EVENT_TYPE,
 } from './events/index.ts';
 export type {
-  ArticleBaseEventInit,
   ArticleContentChangeEventInit,
   ArticleCreateEventInit,
   ArticleEvent,
-  ArticleEventBaseInit,
-  ArticleStatusEventInit,
   ChangeContentEventData,
   ChangeTitleEventData,
   CreateEventData,

@@ -1,10 +1,5 @@
 export { ArticleEventBase, EVENT_TYPE } from './ArticleEventBase.ts';
-export type {
-  ArticleBaseEventInit,
-  ArticleEventBaseInit,
-  ArticleStatusEventInit,
-  EventType,
-} from './ArticleEventBase.ts';
+export type { EventType } from './ArticleEventBase.ts';
 
 export { ArticleCreateEvent } from './ArticleCreateEvent.ts';
 export type { ArticleCreateEventInit, CreateEventData } from './ArticleCreateEvent.ts';

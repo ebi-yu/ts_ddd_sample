@@ -8,7 +8,7 @@ import { ArticleId } from '../vo/ArticleId.ts';
 import { AuthorId } from '../vo/AuthorId.ts';
 import { ArticleEventBase, EVENT_TYPE } from './ArticleEventBase.ts';
 
-type TestEventData = { note: string };
+type TestEventData = Record<string, unknown>;
 
 class TestEvent extends ArticleEventBase<TestEventData> {
   constructor({
@@ -155,5 +155,33 @@ describe('値比較', () => {
 
     // Assert
     expect(result).toBe(false);
+  });
+  it('データのプロパティ順が異なっても、equalsで一致判定が返る', () => {
+    // Arrange
+    const leftData = { alpha: '1', beta: '2' };
+    const rightData: Record<string, string> = {};
+    rightData.beta = '2';
+    rightData.alpha = '1';
+
+    const left = new TestEvent({
+      articleId,
+      authorId,
+      version: 1,
+      eventDate,
+      data: leftData,
+    });
+    const right = new TestEvent({
+      articleId,
+      authorId,
+      version: 1,
+      eventDate,
+      data: rightData,
+    });
+
+    // Act
+    const result = left.equals(right);
+
+    // Assert
+    expect(result).toBe(true);
   });
 });

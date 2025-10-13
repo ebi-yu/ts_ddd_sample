@@ -1,4 +1,4 @@
-import { HTTPException } from 'hono/http-exception';
+import { ConflictException } from '@shared/error/ConflictException.ts';
 import { Article, ArticleId, AuthorId, Content, Title } from '../domain/index.ts';
 import type { ICreateArticleUseCase } from './adapters/inbound/ICreateArticleUseCase.ts';
 import type { IArticleRepository } from './adapters/outbound/IArticleEventRepository.ts';
@@ -29,7 +29,7 @@ export class CreateArticleUseCase implements ICreateArticleUseCase {
     });
 
     if (isDuplicate) {
-      throw new HTTPException(409, { message: 'Same Title and Author ID Article already exists' });
+      throw new ConflictException('Same Title and Author ID Article already exists');
     }
 
     // リポジトリを通じて永続化

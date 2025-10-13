@@ -1,4 +1,3 @@
-import { Content } from '../vo/Content.ts';
 import { Title } from '../vo/Title.ts';
 import { ArticleArchiveEvent } from './ArticleArchiveEvent.ts';
 import {
@@ -6,7 +5,7 @@ import {
   type ArticleContentChangeEventInit,
 } from './ArticleContentChangeEvent.ts';
 import { ArticleCreateEvent, type ArticleCreateEventInit } from './ArticleCreateEvent.ts';
-import { type ArticleStatusEventInit } from './ArticleEventBase.ts';
+import { type ArticleBaseEventInit } from './ArticleEventBase.ts';
 import { ArticlePublishEvent } from './ArticlePublishEvent.ts';
 import { ArticleReDraftEvent } from './ArticleReDraftEvent.ts';
 import {
@@ -40,11 +39,11 @@ export const ArticleEventFactory = {
   changeContent: (params: ArticleContentChangeEventInit): ArticleContentChangeEvent =>
     new ArticleContentChangeEvent(params),
 
-  publish: (params: ArticleStatusEventInit): ArticlePublishEvent => new ArticlePublishEvent(params),
+  publish: (params: ArticleBaseEventInit): ArticlePublishEvent => new ArticlePublishEvent(params),
 
-  archive: (params: ArticleStatusEventInit): ArticleArchiveEvent => new ArticleArchiveEvent(params),
+  archive: (params: ArticleBaseEventInit): ArticleArchiveEvent => new ArticleArchiveEvent(params),
 
-  reDraft: (params: ArticleStatusEventInit): ArticleReDraftEvent => new ArticleReDraftEvent(params),
+  reDraft: (params: ArticleBaseEventInit): ArticleReDraftEvent => new ArticleReDraftEvent(params),
 };
 
 const toTitle = (raw: unknown): Title => {
@@ -64,39 +63,4 @@ const toTitle = (raw: unknown): Title => {
   }
 
   throw new Error('Invalid title payload in event data');
-};
-
-const toNullableTitle = (raw: unknown): Title | null => {
-  if (raw === null || raw === undefined) {
-    return null;
-  }
-
-  return toTitle(raw);
-};
-
-const toContent = (raw: unknown): Content => {
-  if (raw instanceof Content) {
-    return raw;
-  }
-
-  if (typeof raw === 'string') {
-    return new Content(raw);
-  }
-
-  if (raw && typeof raw === 'object' && '_value' in (raw as Record<string, unknown>)) {
-    const value = (raw as { _value?: unknown })._value;
-    if (typeof value === 'string') {
-      return new Content(value);
-    }
-  }
-
-  throw new Error('Invalid content payload in event data');
-};
-
-const toNullableContent = (raw: unknown): Content | null => {
-  if (raw === null || raw === undefined) {
-    return null;
-  }
-
-  return toContent(raw);
 };

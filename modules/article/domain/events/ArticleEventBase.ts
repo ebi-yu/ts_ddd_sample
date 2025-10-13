@@ -12,22 +12,12 @@ export const EVENT_TYPE = {
 
 export type EventType = (typeof EVENT_TYPE)[keyof typeof EVENT_TYPE];
 
-export type ArticleEventBaseInit = {
-  articleId: ArticleId;
-  authorId: AuthorId;
-  type: EventType;
-  version: number;
-  eventDate?: Date;
-};
-
 export type ArticleBaseEventInit = {
   articleId: ArticleId;
   authorId: AuthorId;
   version: number;
   eventDate?: Date;
 };
-
-export type ArticleStatusEventInit = ArticleBaseEventInit;
 
 export abstract class ArticleEventBase<Data = unknown> {
   private readonly _articleId: ArticleId;
@@ -36,7 +26,13 @@ export abstract class ArticleEventBase<Data = unknown> {
   private readonly _version: number;
   private readonly _eventDate: Date;
 
-  protected constructor({ articleId, authorId, type, version, eventDate }: ArticleEventBaseInit) {
+  protected constructor({
+    articleId,
+    authorId,
+    type,
+    version,
+    eventDate,
+  }: ArticleBaseEventInit & { type: EventType }) {
     this._articleId = articleId;
     this._authorId = authorId;
     this._type = type;
@@ -72,7 +68,57 @@ export abstract class ArticleEventBase<Data = unknown> {
       this._type === other.getType() &&
       this._version === other.getVersion() &&
       this._eventDate.getTime() === other.getEventDate().getTime() &&
-      JSON.stringify(this.getData()) === JSON.stringify(other.getData())
+      ArticleEventBase.isSameData(this.getData(), other.getData())
     );
+  }
+
+  private static isSameData(left: unknown, right: unknown): boolean {
+    if (left === right) return true;
+
+    if (left instanceof Date && right instanceof Date) {
+      return left.getTime() === right.getTime();
+    }
+
+    const hasEquals = (value: unknown): value is { equals: (other: unknown) => boolean } =>
+      !!value &&
+      typeof value === 'object' &&
+      'equals' in (value as Record<string, unknown>) &&
+      typeof (value as { equals?: unknown }).equals === 'function';
+
+    if (hasEquals(left) && hasEquals(right)) {
+      return left.equals(right);
+    }
+
+    if (Array.isArray(left) && Array.isArray(right)) {
+      if (left.length !== right.length) {
+        return false;
+      }
+
+      return left.every((item, index) => ArticleEventBase.isSameData(item, right[index]));
+    }
+
+    if (
+      left &&
+      right &&
+      typeof left === 'object' &&
+      typeof right === 'object' &&
+      !Array.isArray(left) &&
+      !Array.isArray(right)
+    ) {
+      const leftEntries = Object.entries(left);
+      const rightEntries = Object.entries(right);
+
+      if (leftEntries.length !== rightEntries.length) {
+        return false;
+      }
+
+      return leftEntries.every(
+        ([key, value]) =>
+          Object.prototype.hasOwnProperty.call(right, key) &&
+          ArticleEventBase.isSameData(value, (right as Record<string, unknown>)[key]),
+      );
+    }
+
+    return false;
   }
 }

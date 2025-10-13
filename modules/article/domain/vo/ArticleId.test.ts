@@ -18,23 +18,46 @@ describe('生成', () => {
     expect(articleId.value).toMatch(uuidRegex);
   });
 
-  it('任意の文字列が与えられると、そのまま保持され、同じ値が返る', () => {
+  it('UUID形式の文字列が与えられると、正しく生成され、同じ値が返る', () => {
     // Arrange
-    const rawId = 'custom-article-id';
+    const rawId = '123e4567-e89b-12d3-a456-426614174000';
 
     // Act
-    const articleId = new ArticleId(rawId);
+    const authorId = new ArticleId(rawId);
 
     // Assert
-    expect(articleId.value).toBe(rawId);
+    expect(authorId.value).toBe(rawId);
+  });
+
+  it('大文字を含むUUIDが与えられると、正しくバリデーションされ、同じ値が返る', () => {
+    // Arrange
+    const rawId = '123E4567-E89B-12D3-A456-426614174000';
+
+    // Act
+    const authorId = new ArticleId(rawId);
+
+    // Assert
+    expect(authorId.value).toMatch(uuidRegex);
+  });
+
+  it('不正な文字列が与えられると、生成時にバリデーションされ、例外が返る', () => {
+    // Arrange
+    const rawId = 'invalid-author-id';
+
+    // Act
+    const act = () => new ArticleId(rawId);
+
+    // Assert
+    expect(act).toThrowError('Invalid Article ID');
   });
 });
 
 describe('値比較', () => {
   it('同じ内容が与えられると、equalsで一致判定が返る', () => {
     // Arrange
-    const left = new ArticleId('article-id');
-    const right = new ArticleId('article-id');
+    const rawId = '123e4567-e89b-12d3-a456-426614174000';
+    const left = new ArticleId(rawId);
+    const right = new ArticleId(rawId);
 
     // Act
     const result = left.equals(right);
@@ -45,8 +68,8 @@ describe('値比較', () => {
 
   it('異なる内容が与えられると、equalsで不一致判定が返る', () => {
     // Arrange
-    const left = new ArticleId('article-id-1');
-    const right = new ArticleId('article-id-2');
+    const left = new ArticleId('123e4567-e89b-12d3-a456-426614174000');
+    const right = new ArticleId('223e4567-e89b-12d3-a456-426614174000');
 
     // Act
     const result = left.equals(right);
