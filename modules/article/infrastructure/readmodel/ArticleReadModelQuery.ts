@@ -1,4 +1,4 @@
-import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
+import { RedisClient } from '@shared/client/RedisClient.ts';
 import {
   type ArticleReadModelDTO,
   type IArticleReadModelQuery,

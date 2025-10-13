@@ -47,11 +47,14 @@ DDEを学習するためのリポジトリ。
     - index.ts : hono.jsのルーター定義  
   - user : ユーザコンテキスト(未実装)
   - shared : 複数コンテキストで共有するモジュール
-    - domain : ドメイン層
-    - infrastructure : インフラ層
+    - utils
+      - exception : 共通例外クラス
+      - validator : 共通バリデーション関連
+      - vo : 共通値オブジェクト
+    - infrastructure : 共通インフラ層
       - OpenAPI.ts : OpenAPIのメソッド定義
       - Kafka.ts : Kafkaのメソッド定義
-    - Redis.ts : Redisのメソッド定義
+      - Redis.ts : Redisのメソッド定義
   - index.ts : Honoのルーターをまとめる
 - scripts
   - generateOpenAPI.ts : OpenAPIのスキーマを生成するスクリプト

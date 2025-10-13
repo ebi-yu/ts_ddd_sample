@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { withOpenApiObject } from '@shared/infrastructure/OpenAPI.ts';
+import { withOpenApiObject } from '@shared/utils/OpenAPI.ts';
 import { GetArticlesQueryDto } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
 import { ArticleReadModelDtoSchema } from 'modules/article/application/dto/output/ArticleReadModelDTO.ts';
 

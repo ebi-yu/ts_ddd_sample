@@ -1,4 +1,4 @@
-import { resolveKafkaBrokers } from '@shared/infrastructure/Kafka.ts';
+import { resolveKafkaBrokers } from '@shared/utils/Kafka.ts';
 import { ArticleReadModelProjector } from '../readmodel/ArticleReadModelProjector.ts';
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
 import { KafkaArticleDomainEventSubscriber } from './KafkaArticleDomainEventSubscriber.ts';

@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server';
-import { resolveKafkaBrokers, verifyKafkaConnectivity } from '@shared/infrastructure/Kafka.ts';
-import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
+import { RedisClient } from '@shared/client/RedisClient.ts';
+import { resolveKafkaBrokers, verifyKafkaConnectivity } from '@shared/utils/Kafka.ts';
 import 'dotenv/config';
 import app from './modules/index.ts';
 

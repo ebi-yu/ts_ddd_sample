@@ -1,4 +1,4 @@
-import { ConflictException } from '@shared/error/ConflictException.ts';
+import { ConflictException } from '@shared/utils/exception/ConflictException.ts';
 import { Article, ArticleId, AuthorId, Content, Title } from '../domain/index.ts';
 import type { ICreateArticleUseCase } from './adapters/inbound/ICreateArticleUseCase.ts';
 import type { IArticleRepository } from './adapters/outbound/IArticleEventRepository.ts';

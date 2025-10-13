@@ -1,4 +1,4 @@
-import { isUuid } from '@shared/domain/validator/Uuid.ts';
+import { isUuid } from '@shared/utils/validator/isUuid.ts';
 import { randomUUID } from 'crypto';
 
 export class ArticleId {
