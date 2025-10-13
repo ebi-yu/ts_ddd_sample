@@ -1,6 +1,6 @@
 import type { Producer } from 'kafkajs';
 import { Kafka } from 'kafkajs';
-import type { IDomainEventPublisher } from 'modules/article/application/interface/input/IDomainEventPublisher.ts';
+import type { IDomainEventPublisher } from 'modules/article/application/adapters/outbound/IDomainEventPublisher.ts';
 import type { ArticleEvent } from 'modules/article/domain/events/index.ts';
 import { serializeArticleEvent } from '../mapper/ArticleEventKafkaMapper.ts';
 

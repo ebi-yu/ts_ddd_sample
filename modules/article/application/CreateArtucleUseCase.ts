@@ -1,9 +1,9 @@
 import { HTTPException } from 'hono/http-exception';
 import { Article, ArticleId, AuthorId, Content, Title } from '../domain/index.ts';
+import type { ICreateArticleUseCase } from './adapters/inbound/ICreateArticleUseCase.ts';
+import type { IArticleRepository } from './adapters/outbound/IArticleEventRepository.ts';
+import type { IDomainEventPublisher } from './adapters/outbound/IDomainEventPublisher.ts';
 import type { CreateArticleDtoType } from './dto/input/CreateArticleDTO.ts';
-import type { IArticleRepository } from './interface/input/IArticleEventRepository.ts';
-import type { IDomainEventPublisher } from './interface/input/IDomainEventPublisher.ts';
-import type { ICreateArticleUseCase } from './interface/output/ICreateArticleUseCase.ts';
 
 /*
  * 記事作成ユースケース

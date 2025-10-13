@@ -7,7 +7,7 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node", "vitest"],
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "experimentalDecorators": true,

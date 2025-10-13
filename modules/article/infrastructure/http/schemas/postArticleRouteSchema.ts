@@ -1,6 +1,6 @@
 import { createRoute } from '@hono/zod-openapi';
+import { withOpenApiObject } from '@shared/infrastructure/OpenAPI.ts';
 import { CreateArticleDto } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
-import { withOpenApiObject } from 'modules/shared/infrastructure/openapi/schema.ts';
 import { z } from 'zod';
 
 const { schema: CreateArticleRequestSchema } = withOpenApiObject(CreateArticleDto, {

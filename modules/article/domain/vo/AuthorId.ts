@@ -2,7 +2,7 @@ export class AuthorId {
   private readonly _value: string;
 
   constructor(value: string) {
-    if (!this.isValidUserId(value)) throw new Error('Invalid user ID');
+    if (!this.isValidAuthorId(value)) throw new Error('Invalid Author ID');
     this._value = value;
   }
 
@@ -14,7 +14,7 @@ export class AuthorId {
     return this._value;
   }
 
-  private isValidUserId(value: string): boolean {
+  private isValidAuthorId(value: string): boolean {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(value);
   }

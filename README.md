@@ -1,6 +1,53 @@
 # 概要
 
-DDEを学習するためのリポジトリ
+DDEを学習するためのリポジトリ。
+記事投稿サービスを題材にしている。
+
+## ディレクトリ構成
+
+```md
+- modules : 境界づけられたコンテキストごとのモジュール
+  - article : 記事コンテキスト
+    - application : ユースケース層
+      - dto : ユースケースの関数の引数・戻り値の型定義。Zodでバリデーションも行う
+        - input : ユースケースの入力Data Transfer Object
+        - output : ユースケースの出力Data Transfer Object
+      - adapter : ユースケースのアダプター
+        - inbound : APIコントローラーからの呼び出しを受けるアダプター(interface)
+        - outbound : ドメインサービスやリポジトリを呼び出すアダプター(interface)
+    - domain : ドメイン層
+      - events : 記事イベントの定義
+      - vo : 値オブジェクトの定義
+        - Article.ts : 記事の集約。記事イベントを集約して記事オブジェクトを生成する  
+    - infrastructure : インフラ層
+      - http
+        - controllers : APIコントローラー
+        - schemas : OpenAPIスキーマ定義
+      - mapper : ドメインイベントをKafkaやDBのスキーマに変換するマッパー
+      - messaging : ドメインイベントをやり取りするKafkaのプロデューサー・コンシューマー
+      - persistence : 永続化層の実装
+        - ArticleEventRepository.ts : 記事イベントのリポジトリ実装。Prismaを利用してPostgreSQLに保存する　 
+      - readmodel : 読み取り用モデルの定義。Redisに保存する
+        - ArticleReadModel.ts : 記事の読み取り用モデル。Redisに保存する
+        - ArticleReadModelQuery.ts : 記事の読み取り用モデルのクエリインターフェース
+        - ArticleReadModelProjector.ts : 記事の読み取り用モデルのプロジェクター。記事イベントを受けて読み取り用モデルを更新する
+    - dependencies.ts : 依存関係の注入設定
+    - index.ts : hono.jsのルーター定義  
+  - user : ユーザコンテキスト(未実装)
+  - shared : 複数コンテキストで共有するモジュール
+    - domain : ドメイン層
+    - infrastructure : インフラ層
+      - OpenAPI.ts : OpenAPIのメソッド定義
+      - Kafka.ts : Kafkaのメソッド定義
+    - Redis.ts : Redisのメソッド定義
+  - index.ts : Honoのルーターをまとめる
+- scripts
+  - generateOpenAPI.ts : OpenAPIのスキーマを生成するスクリプト
+  - subscribeDomainEvents.ts : Kafkaに接続してドメインイベントの購読を開始するスクリプト
+- rest-client : ローカルでAPIを試すためのRESTクライアント
+- prisma : Prismaのスキーマ定義
+- server.ts : APIサーバーのエントリーポイント
+```
 
 ## 使用技術
 
@@ -46,11 +93,6 @@ DDEを学習するためのリポジトリ
 3. ユースケース内でRedisから記事の読み取り用モデルを取得する
 4. APIサーバーからのレスポンスを返す
 
-## TODO
-
-- 依存性の注入
-- Hono.jsのサーバー実装
-
 ## 開発コマンド
 
 APIサーバーを起動する前に、docker-composeでKafkaとRedis、PostgreSQLを起動してください。
@@ -68,6 +110,7 @@ docker-compose down --volumes --remove-orphans
 | `pnpm dev`          | `pnpm dev:api`と`pnpm subscribe`を同時に実行します |
 | `pnpm dev:api`      | APIサーバーを起動します                             |
 | `pnpm subscribe`    | Kafkaに接続をして、ドメインイベントの購読を開始します                 |
+| `pnpm test`         | Vitestでユニットテストを実行します                         |
 | `pnpm lint`         | oxlintで静的解析を実行し、警告を検知すると失敗します |
 | `pnpm lint:fix`     | 可能な範囲でoxlintの自動修正を適用します             |
 | `pnpm format`       | Prettierでリポジトリ全体を整形します               |

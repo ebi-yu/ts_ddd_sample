@@ -1,3 +1,9 @@
+/**
+ * Article 集約はイベントソーシングで状態を管理する。
+ * - create/change/publishなどの操作でドメインイベントを発行し、内部履歴へ蓄積
+ * - 値オブジェクト(Title/Content)による不変条件を尊重
+ * - 同一値の変更は冪等に扱い、イベントを追加しない
+ */
 import {
   ArticleContentChangeEvent,
   ArticleCreateEvent,
@@ -51,7 +57,7 @@ export class Article {
 
     // バリデーション
     if (currentTitle?.equals(newTitle)) {
-      throw new Error('新しいタイトルは現在のタイトルと同じです');
+      return this;
     }
 
     // イベント発行
@@ -77,7 +83,7 @@ export class Article {
 
     // バリデーション
     if (currentContent?.equals(newContent)) {
-      throw new Error('新しいコンテンツは現在のコンテンツと同じです');
+      return this;
     }
 
     // イベント発行

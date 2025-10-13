@@ -1,8 +1,8 @@
+import type { ICreateArticleUseCase } from 'modules/article/application/adapters/inbound/ICreateArticleUseCase.ts';
+import type { ISearchArticleUseCase } from 'modules/article/application/adapters/inbound/ISearchArticleUseCase.ts';
 import type { CreateArticleDtoType } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
 import type { GetArticlesQueryDto } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
 import type { ArticleReadModelDTO } from 'modules/article/application/dto/output/ArticleReadModelDTO.ts';
-import type { ICreateArticleUseCase } from 'modules/article/application/interface/output/ICreateArticleUseCase.ts';
-import type { ISearchArticleUseCase } from 'modules/article/application/interface/output/ISearchArticleUseCase.ts';
 
 export class ArticleController {
   constructor(

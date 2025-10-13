@@ -1,5 +1,5 @@
 import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
-import type { IArticleReadModelProjector } from 'modules/article/application/interface/input/IArticleReadModelProjector.ts';
+import type { IArticleReadModelProjector } from 'modules/article/application/adapters/outbound/IArticleReadModelProjector.ts';
 import {
   EVENT_TYPE,
   type ArticleEvent,

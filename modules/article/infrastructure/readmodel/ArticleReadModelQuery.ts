@@ -2,7 +2,7 @@ import { RedisClient } from '@shared/infrastructure/RedisClient.ts';
 import {
   type ArticleReadModelDTO,
   type IArticleReadModelQuery,
-} from '../../application/interface/input/IArticleReadModelQuery.ts';
+} from '../../application/adapters/outbound/IArticleReadModelQuery.ts';
 import { RedisKeys, type ArticleReadModel } from './ArticleReadModel.ts';
 
 /*

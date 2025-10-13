@@ -1,3 +1,9 @@
+/**
+ * Title値オブジェクトは記事タイトルの整形と長さ制約を担う。
+ * - 前後空白の除去
+ * - 空文字と256文字超過の禁止
+ * - equalsで値比較を提供
+ */
 export class Title {
   private readonly _value: string;
   private readonly MAX_LENGTH = 256;

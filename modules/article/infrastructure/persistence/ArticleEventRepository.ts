@@ -1,5 +1,5 @@
 import { ArticleEventType, PrismaClient } from '@prisma/client';
-import type { IArticleRepository } from 'modules/article/application/interface/input/IArticleEventRepository.ts';
+import type { IArticleRepository } from 'modules/article/application/adapters/outbound/IArticleEventRepository.ts';
 import type { Article } from 'modules/article/domain/Article.ts';
 import type { ArticleId } from 'modules/article/domain/index.ts';
 import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
