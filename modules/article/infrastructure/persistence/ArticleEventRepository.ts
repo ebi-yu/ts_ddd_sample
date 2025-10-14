@@ -1,4 +1,4 @@
-import { ArticleEventType, PrismaClient } from '@prisma/client';
+import { ArticleEventType, OutboxStatus, PrismaClient, type Prisma } from '@prisma/client';
 import type { IArticleRepository } from 'modules/article/application/adapters/outbound/IArticleEventRepository.ts';
 import { Article } from 'modules/article/domain/Article.ts';
 import type { ArticleId } from 'modules/article/domain/index.ts';
@@ -21,24 +21,41 @@ const safeJsonParse = (value: string): unknown => {
 // これにより、読み取りと書き込みの責務を分離(CQRS)し、システムのパフォーマンスとスケーラビリティを向上させることができる
 
 const defaultPrismaClient = new PrismaClient();
+const ARTICLE_OUTBOX_CONTEXT = 'article';
+const DEFAULT_OUTBOX_TOPIC = process.env.ARTICLE_EVENT_TOPIC ?? 'article-events';
 
 export class ArticleEventRepository implements IArticleRepository {
-  constructor(private readonly prisma: PrismaClient = defaultPrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient = defaultPrismaClient,
+    private readonly outboxTopic: string = DEFAULT_OUTBOX_TOPIC,
+  ) {}
 
   /*
    * 記事のドメインイベントを保存する
    */
   async create(article: Article): Promise<void> {
     const primitive = ArticleEventPrimitiveMapper.toPrimitive(article.getCurrentEvent());
+    const payload = JSON.parse(JSON.stringify(primitive)) as Prisma.InputJsonValue;
 
-    await this.prisma.articleEventEntity.create({
-      data: {
-        articleId: article.getId().value,
-        authorId: article.getAuthorId().value,
-        eventType: primitive.type,
-        eventData: JSON.stringify(primitive.data),
-        version: primitive.version,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.articleEventEntity.create({
+        data: {
+          articleId: article.getId().value,
+          authorId: article.getAuthorId().value,
+          eventType: primitive.type,
+          eventData: JSON.stringify(primitive.data),
+          version: primitive.version,
+        },
+      });
+
+      await tx.outboxEvent.create({
+        data: {
+          context: ARTICLE_OUTBOX_CONTEXT,
+          topic: this.outboxTopic,
+          payload,
+          status: OutboxStatus.PENDING,
+        },
+      });
     });
   }
 
@@ -141,10 +158,22 @@ export class ArticleEventRepository implements IArticleRepository {
    * 指定された記事IDに紐づく記事のドメインイベントをすべて削除する
    */
   async deleteAll(articleId: ArticleId): Promise<void> {
-    await this.prisma.articleEventEntity.deleteMany({
-      where: {
-        articleId: articleId.value,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.articleEventEntity.deleteMany({
+        where: {
+          articleId: articleId.value,
+        },
+      });
+
+      await tx.outboxEvent.deleteMany({
+        where: {
+          payload: {
+            path: ['articleId'],
+            equals: articleId.value,
+          },
+          context: ARTICLE_OUTBOX_CONTEXT,
+        },
+      });
     });
   }
 }

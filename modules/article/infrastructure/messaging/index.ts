@@ -2,6 +2,7 @@ import { resolveKafkaBrokers } from '@shared/utils/Kafka.ts';
 import { ArticleReadModelProjector } from '../readmodel/ArticleReadModelProjector.ts';
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
 import { KafkaArticleDomainEventSubscriber } from './KafkaArticleDomainEventSubscriber.ts';
+import { ArticleOutboxDispatcher } from './ArticleOutboxDispatcher.ts';
 
 const DEFAULT_TOPIC = 'article-events';
 const DEFAULT_GROUP_ID = 'article-read-model';
@@ -60,3 +61,4 @@ const resolveDeadLetterTopic = (): string | null => {
 };
 
 export { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
+export { ArticleOutboxDispatcher };

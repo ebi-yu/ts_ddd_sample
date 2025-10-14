@@ -7,21 +7,45 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PrismaClient } from '@prisma/client';
 import { ArticleEventRepository } from './ArticleEventRepository.ts';
 import { ArticleId } from '../../domain/vo/ArticleId.ts';
+import { Article } from '../../domain/Article.ts';
+import { ArticleId as DomainArticleId } from '../../domain/vo/ArticleId.ts';
+import { AuthorId } from '../../domain/vo/AuthorId.ts';
+import { Title } from '../../domain/vo/Title.ts';
+import { Content } from '../../domain/vo/Content.ts';
 
 const createPrismaStub = () => {
-  const findMany = vi.fn();
-  const create = vi.fn();
-  const deleteMany = vi.fn();
-
-  const prismaStub = {
-    articleEventEntity: {
-      findMany,
-      create,
-      deleteMany,
-    },
+  const articleEventEntity = {
+    findMany: vi.fn(),
+    create: vi.fn(),
+    deleteMany: vi.fn(),
   };
 
-  return { prismaStub: prismaStub as unknown as PrismaClient, findMany, create, deleteMany };
+  const outboxEvent = {
+    findMany: vi.fn(),
+    create: vi.fn(),
+    deleteMany: vi.fn(),
+    update: vi.fn(),
+  };
+
+  const $transaction = vi.fn(async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      articleEventEntity,
+      outboxEvent,
+    }),
+  );
+
+  const prismaStub = {
+    articleEventEntity,
+    outboxEvent,
+    $transaction,
+  };
+
+  return {
+    prismaStub: prismaStub as unknown as PrismaClient,
+    articleEventEntity,
+    outboxEvent,
+    $transaction,
+  };
 };
 
 describe('ArticleEventRepository.findById', () => {
@@ -33,8 +57,8 @@ describe('ArticleEventRepository.findById', () => {
 
   it('イベント履歴が存在しないとき、null が返る', async () => {
     // Arrange
-    const { prismaStub, findMany } = createPrismaStub();
-    findMany.mockResolvedValueOnce([]);
+    const { prismaStub, articleEventEntity } = createPrismaStub();
+    articleEventEntity.findMany.mockResolvedValueOnce([]);
     const repository = new ArticleEventRepository(prismaStub);
 
     // Act
@@ -42,7 +66,7 @@ describe('ArticleEventRepository.findById', () => {
 
     // Assert
     expect(result).toBeNull();
-    expect(findMany).toHaveBeenCalledWith({
+    expect(articleEventEntity.findMany).toHaveBeenCalledWith({
       where: { articleId: articleId.value },
       orderBy: [{ version: 'asc' }],
     });
@@ -50,8 +74,8 @@ describe('ArticleEventRepository.findById', () => {
 
   it('イベント履歴から Article 集約を再構築し、最新状態を返す', async () => {
     // Arrange
-    const { prismaStub, findMany } = createPrismaStub();
-    findMany.mockResolvedValueOnce([
+    const { prismaStub, articleEventEntity } = createPrismaStub();
+    articleEventEntity.findMany.mockResolvedValueOnce([
       {
         articleId: articleId.value,
         authorId: 'aaaa1111-bbbb-4ccc-8ddd-eeeeffff0000',
@@ -100,8 +124,8 @@ describe('ArticleEventRepository.checkDuplicate', () => {
 
   it('最新のタイトルが一致すると true が返る', async () => {
     // Arrange
-    const { prismaStub, findMany } = createPrismaStub();
-    findMany.mockResolvedValueOnce([
+    const { prismaStub, articleEventEntity } = createPrismaStub();
+    articleEventEntity.findMany.mockResolvedValueOnce([
       {
         articleId: '11111111-2222-4333-8444-555566667777',
         authorId,
@@ -137,8 +161,8 @@ describe('ArticleEventRepository.checkDuplicate', () => {
 
     // Assert
     expect(result).toBe(true);
-    expect(findMany).toHaveBeenCalledTimes(1);
-    expect(findMany.mock.calls[0][0]).toMatchObject({
+    expect(articleEventEntity.findMany).toHaveBeenCalledTimes(1);
+    expect(articleEventEntity.findMany.mock.calls[0][0]).toMatchObject({
       where: {
         authorId,
       },
@@ -147,8 +171,8 @@ describe('ArticleEventRepository.checkDuplicate', () => {
 
   it('一致するタイトルが無い場合は false が返る', async () => {
     // Arrange
-    const { prismaStub, findMany } = createPrismaStub();
-    findMany.mockResolvedValueOnce([
+    const { prismaStub, articleEventEntity } = createPrismaStub();
+    articleEventEntity.findMany.mockResolvedValueOnce([
       {
         articleId: '88888888-9999-4aaa-8555-ccccdddd0000',
         authorId,
@@ -172,5 +196,36 @@ describe('ArticleEventRepository.checkDuplicate', () => {
 
     // Assert
     expect(result).toBe(false);
+  });
+});
+
+describe('ArticleEventRepository.create', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('イベント保存とアウトボックス登録を同一トランザクションで行う', async () => {
+    // Arrange
+    const { prismaStub, articleEventEntity, outboxEvent, $transaction } = createPrismaStub();
+    const repository = new ArticleEventRepository(prismaStub);
+    const article = Article.create({
+      id: new DomainArticleId('6f9c3ae9-1234-4b5d-8e7f-3c2b1a0f9e8d'),
+      authorId: new AuthorId('aaaa1111-bbbb-4ccc-8ddd-eeeeffff0000'),
+      title: new Title('Outbox Title'),
+      content: new Content('Outbox Content'),
+    });
+
+    // Act
+    await repository.create(article);
+
+    // Assert
+    expect($transaction).toHaveBeenCalledTimes(1);
+    expect(articleEventEntity.create).toHaveBeenCalledTimes(1);
+    expect(outboxEvent.create).toHaveBeenCalledTimes(1);
+    const payload = outboxEvent.create.mock.calls[0][0]?.data?.payload;
+    expect(payload).toMatchObject({
+      articleId: article.getId().value,
+      type: 'CREATE',
+    });
   });
 });
