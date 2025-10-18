@@ -1,6 +1,6 @@
 import { OutboxStatus, PrismaClient } from '@prisma/client';
-import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
 import type { ArticleEventPrimitive } from '../mapper/ArticleEventPrimitiveMapper.ts';
+import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
 import { createKafkaDomainEventPublisher } from './index.ts';
 
@@ -16,6 +16,7 @@ export type ArticleOutboxDispatcherOptions = {
   maxAttempts?: number;
 };
 
+// 記事のOutboxイベントをKafkaに送信するDispatcher
 export class ArticleOutboxDispatcher {
   private readonly batchSize: number;
   private readonly retryDelayMs: number;

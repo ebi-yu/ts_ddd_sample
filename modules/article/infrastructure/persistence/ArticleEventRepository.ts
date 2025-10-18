@@ -1,12 +1,12 @@
 import { ArticleEventType, OutboxStatus, PrismaClient, type Prisma } from '@prisma/client';
 import type { IArticleRepository } from 'modules/article/application/adapters/outbound/IArticleEventRepository.ts';
 import { Article } from 'modules/article/domain/Article.ts';
-import type { ArticleId } from 'modules/article/domain/index.ts';
-import { EVENT_TYPE, type EventType } from 'modules/article/domain/events/ArticleEventBase.ts';
 import type { CreateEventData } from 'modules/article/domain/events/ArticleCreateEvent.ts';
+import { EVENT_TYPE, type EventType } from 'modules/article/domain/events/ArticleEventBase.ts';
 import type { ChangeTitleEventData } from 'modules/article/domain/events/ArticleTitleChangeEvent.ts';
-import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
+import type { ArticleId } from 'modules/article/domain/index.ts';
 import type { ArticleEventPrimitive } from '../mapper/ArticleEventPrimitiveMapper.ts';
+import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
 
 const safeJsonParse = (value: string): unknown => {
   try {
@@ -48,6 +48,8 @@ export class ArticleEventRepository implements IArticleRepository {
         },
       });
 
+      // Outboxパターンでドメインイベントを保存
+      // イベントの送信は別プロセスで行う
       await tx.outboxEvent.create({
         data: {
           context: ARTICLE_OUTBOX_CONTEXT,
