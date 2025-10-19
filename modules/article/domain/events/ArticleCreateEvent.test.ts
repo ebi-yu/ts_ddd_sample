@@ -16,7 +16,7 @@ const articleId = new ArticleId('51f6e7b1-492f-4462-bfa7-8d4b93f39f6c');
 const authorId = new AuthorId('c24f55c9-8325-4637-a8db-4d9da1d56edd');
 
 describe('生成', () => {
-  it('タイトルとコンテンツが与えられると、CREATE種別でイベントが生成され、同じ値が返る', () => {
+  it('タイトルとコンテンツを与えた場合、イベントを生成すると、CREATE種別と同じ値が返る', () => {
     // Arrange
     const title = new Title('Domain Events in Action');
     const content = new Content('Events capture state transitions.');
@@ -38,7 +38,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じ内容が与えられると、equalsで一致判定が返る', () => {
+  it('同じ内容を与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const title = new Title('Aggregate consistency');
     const content = new Content('Ensure events reflect state changes.');
@@ -64,7 +64,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('タイトルが異なると、equalsで不一致判定が返る', () => {
+  it('タイトルが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const content = new Content('Track state transitions carefully.');
     const left = new ArticleCreateEvent({

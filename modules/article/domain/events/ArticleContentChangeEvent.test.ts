@@ -15,7 +15,7 @@ const articleId = new ArticleId('cf4e35cf-4f0b-4d09-9f69-a9a5c8bd1bdc');
 const authorId = new AuthorId('9ddf3ec9-267e-48d4-89ac-911bef95bfb2');
 
 describe('生成', () => {
-  it('旧コンテンツが存在しない状態で新コンテンツが与えられると、nullと新値が保持され、CHANGE_CONTENT種別が返る', () => {
+  it('旧コンテンツが存在しない場合、新コンテンツを与えてイベントを生成すると、nullと新値とCHANGE_CONTENT種別が返る', () => {
     // Arrange
     const newContent = new Content('Initial draft body.');
 
@@ -32,7 +32,7 @@ describe('生成', () => {
     expect(event.getData()).toMatchObject({ oldContent: null, newContent });
   });
 
-  it('旧コンテンツと新コンテンツが与えられると、両方が保持され、同じ値が返る', () => {
+  it('旧コンテンツと新コンテンツを与えた場合、イベントを生成すると、旧値と新値が返る', () => {
     // Arrange
     const oldContent = new Content('Legacy content.');
     const newContent = new Content('Improved content body.');
@@ -53,7 +53,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じコンテンツの組み合わせが与えられると、equalsで一致判定が返る', () => {
+  it('同じコンテンツの組み合わせを与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const oldContent = new Content('Old body');
     const newContent = new Content('New body');
@@ -80,7 +80,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('新コンテンツが異なると、equalsで不一致判定が返る', () => {
+  it('新コンテンツが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const oldContent = new Content('Old body');
     const left = new ArticleContentChangeEvent({

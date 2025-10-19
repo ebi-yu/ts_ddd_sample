@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { Content } from './Content.ts';
 
 describe('生成', () => {
-  it('空白を含む文字列が与えられると、前後の空白が削除され、整形済みの値が返る', () => {
+  it('空白を含む文字列を与えた場合、Contentを生成すると、前後の空白を除いた値が返る', () => {
     // Arrange
     const rawContent = '  DDD empowers teams.  ';
 
@@ -19,7 +19,7 @@ describe('生成', () => {
     expect(content.value).toBe('DDD empowers teams.');
   });
 
-  it('空文字列が与えられると、生成時にバリデーションされ、例外が返る', () => {
+  it('空文字列を与えた場合、Contentを生成すると、例外が返る', () => {
     // Arrange
     const rawContent = ' ';
 
@@ -30,7 +30,7 @@ describe('生成', () => {
     expect(act).toThrowError('Content cannot be empty');
   });
 
-  it('最大長を超える文字列が与えられると、生成時にバリデーションされ、例外が返る', () => {
+  it('最大長を超える文字列を与えた場合、Contentを生成すると、例外が返る', () => {
     // Arrange
     const rawContent = 'a'.repeat(5001);
 
@@ -43,7 +43,7 @@ describe('生成', () => {
     );
   });
 
-  it('最大長ちょうどの文字列が与えられると、正しく生成され値が返る', () => {
+  it('最大長ちょうどの文字列を与えた場合、Contentを生成すると、同じ長さの値が返る', () => {
     // Arrange
     const rawContent = 'a'.repeat(5000);
 
@@ -56,7 +56,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じ内容が与えられると、equalsで一致判定が返る', () => {
+  it('同じ内容を与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const left = new Content('Knowledge crunching');
     const right = new Content('Knowledge crunching');
@@ -68,7 +68,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('異なる内容が与えられると、equalsで不一致判定が返る', () => {
+  it('異なる内容を与えた場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const left = new Content('Tactical design');
     const right = new Content('Strategic design');

@@ -4,6 +4,8 @@ import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapp
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
 import { createKafkaDomainEventPublisher } from './index.ts';
 
+type ArticleDomainEventPublisher = Pick<KafkaDomainEventPublisher, 'publish' | 'disconnect'>;
+
 const defaultPrismaClient = new PrismaClient();
 const DEFAULT_BATCH_SIZE = Number.parseInt(process.env.OUTBOX_BATCH_SIZE ?? '10', 10);
 const DEFAULT_RETRY_DELAY_MS = Number.parseInt(process.env.OUTBOX_RETRY_DELAY_MS ?? '5000', 10);
@@ -18,19 +20,24 @@ export type ArticleOutboxDispatcherOptions = {
 
 // 記事のOutboxイベントをKafkaに送信するDispatcher
 export class ArticleOutboxDispatcher {
+  private readonly prisma: PrismaClient;
   private readonly batchSize: number;
   private readonly retryDelayMs: number;
   private readonly maxAttempts: number;
 
   private readonly topic: string;
-  private readonly publisher: KafkaDomainEventPublisher;
+  private readonly publisher: ArticleDomainEventPublisher;
 
   constructor(
-    private readonly prisma: PrismaClient = defaultPrismaClient,
-    topic?: string,
-    publisher?: KafkaDomainEventPublisher,
-    options: ArticleOutboxDispatcherOptions = {},
+    config: {
+      prisma?: PrismaClient;
+      topic?: string;
+      publisher?: ArticleDomainEventPublisher;
+      options?: ArticleOutboxDispatcherOptions;
+    } = {},
   ) {
+    const { prisma = defaultPrismaClient, topic, publisher, options = {} } = config;
+    this.prisma = prisma;
     this.topic = topic ?? process.env.ARTICLE_EVENT_TOPIC ?? 'article-events';
     this.publisher = publisher ?? createKafkaDomainEventPublisher(this.topic);
     this.batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;

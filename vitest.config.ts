@@ -6,7 +6,7 @@ const rootDir = fileURLToPath(new URL('./', import.meta.url));
 export default defineConfig({
   test: {
     globals: true,
-    include: ['modules/**/*.test.ts'],
+    include: ['modules/**/*.test.ts', 'tests/e2e/**/*.test.ts'],
     coverage: {
       reporter: ['text', 'html'],
     },

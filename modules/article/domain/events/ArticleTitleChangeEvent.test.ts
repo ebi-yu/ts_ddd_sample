@@ -15,7 +15,7 @@ const articleId = new ArticleId('5bc1d697-11a4-4abd-9ae0-74a4c8b5e5c9');
 const authorId = new AuthorId('ea8a1f02-24d0-4e21-9d73-7c4f2be4d87c');
 
 describe('生成', () => {
-  it('旧タイトルが存在しない状態で新タイトルが与えられると、nullと新値が保持され、CHANGE_TITLE種別が返る', () => {
+  it('旧タイトルが存在しない場合、新タイトルを与えてイベントを生成すると、nullと新値とCHANGE_TITLE種別が返る', () => {
     // Arrange
     const newTitle = new Title('First publication title');
 
@@ -32,7 +32,7 @@ describe('生成', () => {
     expect(event.getData()).toMatchObject({ oldTitle: null, newTitle });
   });
 
-  it('旧タイトルと新タイトルが与えられると、両方が保持され、同じ値が返る', () => {
+  it('旧タイトルと新タイトルを与えた場合、イベントを生成すると、旧値と新値が返る', () => {
     // Arrange
     const oldTitle = new Title('Original title');
     const newTitle = new Title('Revised title');
@@ -53,7 +53,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じタイトルの組み合わせが与えられると、equalsで一致判定が返る', () => {
+  it('同じタイトルの組み合わせを与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const oldTitle = new Title('Domain Storytelling');
     const newTitle = new Title('Collaborative Modeling');
@@ -80,7 +80,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('新タイトルが異なると、equalsで不一致判定が返る', () => {
+  it('新タイトルが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const oldTitle = new Title('Legacy title');
     const left = new ArticleTitleChangeEvent({

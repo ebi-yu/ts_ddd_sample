@@ -21,7 +21,7 @@ const articleId = new ArticleId('b2c4bf9c-7f9a-429c-9b79-7dc414c3d46c');
 const authorId = new AuthorId('22606304-4286-42e8-9277-9c81b1bc7dfd');
 
 describe('生成', () => {
-  it('createが呼び出されると、ArticleCreateEventが生成され、同じデータが返る', () => {
+  it('createを呼び出した場合、ArticleCreateEventを生成すると、同じデータが返る', () => {
     // Arrange
     const title = new Title('Factory create event');
     const content = new Content('Create event content.');
@@ -40,7 +40,7 @@ describe('生成', () => {
     expect(event.getData()).toMatchObject({ title, content });
   });
 
-  it('changeTitleが呼び出されると、ArticleTitleChangeEventが生成され、旧新タイトルが返る', () => {
+  it('changeTitleを呼び出した場合、ArticleTitleChangeEventを生成すると、旧タイトルと新タイトルが返る', () => {
     // Arrange
     const oldTitle = new Title('Old headline');
     const newTitle = new Title('New headline');
@@ -59,7 +59,7 @@ describe('生成', () => {
     expect(event.getData()).toMatchObject({ oldTitle, newTitle });
   });
 
-  it('changeContentが呼び出されると、ArticleContentChangeEventが生成され、旧新コンテンツが返る', () => {
+  it('changeContentを呼び出した場合、ArticleContentChangeEventを生成すると、旧コンテンツと新コンテンツが返る', () => {
     // Arrange
     const oldContent = new Content('Old body');
     const newContent = new Content('New body');
@@ -78,7 +78,7 @@ describe('生成', () => {
     expect(event.getData()).toMatchObject({ oldContent, newContent });
   });
 
-  it('publishが呼び出されると、ArticlePublishEventが生成され、データはundefinedが返る', () => {
+  it('publishを呼び出した場合、ArticlePublishEventを生成すると、データはundefinedが返る', () => {
     // Arrange
 
     // Act
@@ -94,7 +94,7 @@ describe('生成', () => {
     expect(event.getData()).toBeUndefined();
   });
 
-  it('archiveが呼び出されると、ArticleArchiveEventが生成され、データはundefinedが返る', () => {
+  it('archiveを呼び出した場合、ArticleArchiveEventを生成すると、データはundefinedが返る', () => {
     // Arrange
 
     // Act
@@ -110,7 +110,7 @@ describe('生成', () => {
     expect(event.getData()).toBeUndefined();
   });
 
-  it('reDraftが呼び出されると、ArticleReDraftEventが生成され、データはundefinedが返る', () => {
+  it('reDraftを呼び出した場合、ArticleReDraftEventを生成すると、データはundefinedが返る', () => {
     // Arrange
 
     // Act

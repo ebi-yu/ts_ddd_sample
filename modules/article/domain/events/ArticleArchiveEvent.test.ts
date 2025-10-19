@@ -14,7 +14,7 @@ const articleId = new ArticleId('3d516102-1f24-4cf7-9be4-8bfbd472c3d7');
 const authorId = new AuthorId('ac7ba00e-bbd0-4b32-9f7d-fcb996226529');
 
 describe('生成', () => {
-  it('アーカイブ用の情報が与えられると、ARCHIVE種別でイベントが生成され、データはundefinedが返る', () => {
+  it('アーカイブ用の情報を扱う場合、ArticleArchiveEventを生成すると、ARCHIVE種別とundefinedのデータが返る', () => {
     // Arrange
 
     // Act
@@ -33,7 +33,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じ情報が与えられると、equalsで一致判定が返る', () => {
+  it('同じ情報を与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const eventDate = new Date('2024-07-02T08:00:00Z');
     const left = new ArticleArchiveEvent({ articleId, authorId, version: 3, eventDate });
@@ -46,7 +46,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('eventDateが異なると、equalsで不一致判定が返る', () => {
+  it('eventDateが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const left = new ArticleArchiveEvent({
       articleId,

@@ -55,7 +55,7 @@ describe('ArticleEventRepository.findById', () => {
     vi.resetAllMocks();
   });
 
-  it('イベント履歴が存在しないとき、null が返る', async () => {
+  it('イベント履歴が存在しない場合、findByIdを実行すると、nullが返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity } = createPrismaStub();
     articleEventEntity.findMany.mockResolvedValueOnce([]);
@@ -72,7 +72,7 @@ describe('ArticleEventRepository.findById', () => {
     });
   });
 
-  it('イベント履歴から Article 集約を再構築し、最新状態を返す', async () => {
+  it('イベント履歴が存在する場合、findByIdを実行すると、最新状態が返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity } = createPrismaStub();
     articleEventEntity.findMany.mockResolvedValueOnce([
@@ -122,7 +122,7 @@ describe('ArticleEventRepository.checkDuplicate', () => {
     vi.resetAllMocks();
   });
 
-  it('最新のタイトルが一致すると true が返る', async () => {
+  it('最新のタイトルが一致する場合、checkDuplicateを実行すると、trueが返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity } = createPrismaStub();
     articleEventEntity.findMany.mockResolvedValueOnce([
@@ -169,7 +169,7 @@ describe('ArticleEventRepository.checkDuplicate', () => {
     });
   });
 
-  it('一致するタイトルが無い場合は false が返る', async () => {
+  it('一致するタイトルが無い場合、checkDuplicateを実行すると、falseが返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity } = createPrismaStub();
     articleEventEntity.findMany.mockResolvedValueOnce([
@@ -204,7 +204,7 @@ describe('ArticleEventRepository.create', () => {
     vi.resetAllMocks();
   });
 
-  it('イベント保存とアウトボックス登録を同一トランザクションで行う', async () => {
+  it('イベント保存とアウトボックス登録を行う場合、createを実行すると、同一トランザクション結果が返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity, outboxEvent, $transaction } = createPrismaStub();
     const repository = new ArticleEventRepository(prismaStub);

@@ -50,7 +50,7 @@ describe('生成', () => {
     vi.useRealTimers();
   });
 
-  it('eventDateが指定されないと、システム日時が採用され、同じ日時が返る', () => {
+  it('eventDateが指定されない場合、イベントを生成すると、システム日時が返る', () => {
     // Arrange
 
     // Act
@@ -61,7 +61,7 @@ describe('生成', () => {
     expect(event.getType()).toBe(EVENT_TYPE.CREATE);
   });
 
-  it('eventDateが指定されると、指定日時が保持され、同じ日時が返る', () => {
+  it('eventDateを指定した場合、イベントを生成すると、指定した日時が返る', () => {
     // Arrange
     const fixedDate = new Date('2023-12-31T23:59:59Z');
 
@@ -85,7 +85,7 @@ describe('値比較', () => {
   const authorId = new AuthorId('b23f2f79-d5c8-4f7a-bac6-9f84067a4f3f');
   const eventDate = new Date('2024-05-05T09:30:00Z');
 
-  it('同じ値が与えられると、equalsで一致判定が返る', () => {
+  it('同じ値を与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const left = new TestEvent({
       articleId,
@@ -109,7 +109,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('データが異なると、equalsで不一致判定が返る', () => {
+  it('データが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const left = new TestEvent({
       articleId,
@@ -133,7 +133,7 @@ describe('値比較', () => {
     expect(result).toBe(false);
   });
 
-  it('eventDateが異なると、equalsで不一致判定が返る', () => {
+  it('eventDateが異なる場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const left = new TestEvent({
       articleId,
@@ -156,7 +156,7 @@ describe('値比較', () => {
     // Assert
     expect(result).toBe(false);
   });
-  it('データのプロパティ順が異なっても、equalsで一致判定が返る', () => {
+  it('データのプロパティ順が異なる場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const leftData = { alpha: '1', beta: '2' };
     const rightData: Record<string, string> = {};

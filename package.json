@@ -3,18 +3,19 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -c \"magenta,cyan\" -n \"readmodel,server\" \"pnpm subscribe\" \"pnpm dev:api\"",
+    "dev": "concurrently -c \"magenta,cyan,green\" -n \"readmodel,server,outbox\" \"pnpm subscribe\" \"pnpm dev:api\" \"pnpm outbox\"",
+    "dev:api": "NODE_OPTIONS=\"--inspect=0.0.0.0:9229\" tsx watch server.ts",
+    "subscribe": "tsx scripts/subscribeDomainEvent",
+    "outbox": "tsx scripts/dispatchOutboxEvents.ts",
     "doc": "tsx scripts/generateOpenAPI.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev:api": "tsx watch server.ts",
     "migration": "prisma migrate dev",
     "test": "vitest --run && npx vite preview --outDir .test",
+    "test:e2e": "sh ./tests/e2e/run-e2e.sh",
     "lint": "oxlint --tsconfig tsconfig.json --deny-warnings .",
     "lint:fix": "oxlint --tsconfig tsconfig.json --fix .",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "subscribe": "tsx scripts/subscribeDomainEvent"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",

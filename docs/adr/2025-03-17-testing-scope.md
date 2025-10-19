@@ -8,16 +8,16 @@
 
 ## 決定
 
-- 以下のレイヤーについては small テストを基本とし、責務の変化を素早く検知できるようにする。  
+- 以下のレイヤーについては Small テストを基本とし、責務の変化を素早く検知できるようにする。  
   - **Domain**: 値オブジェクト、ドメインイベント、集約。  
   - **Persistence / Repository**: Prisma をモックし、イベント履歴・アウトボックスの書き込みを確認。  
   - **ReadModel**: Redis クライアントをスタブ化し、Projector／Query の投影ロジックを検証。  
   - **Mapper**: Kafka／Primitive マッパーの相互変換をテスト。  
   - **Messaging**: Publisher／Subscriber／OutboxDispatcher のリトライ分岐をテスト。  
+  - **UseCase**: アプリケーションサービスの主要なビジネスロジックを検証。
+  - **Controller**: ルーティングと主要なレスポンスコードを確認。
 
-- UseCase／Controller 等のアプリケーション層は small テストも行うが、HTTP まで含む medium テストでの統合検証を併用する。
-
-- medium / large テストは個々のレイヤーの small テストを補完し、イベントフロー全体の統合動作を確認するために導入する（UseCase→Repository→Outbox→Dispatcher など）。
+- E2E テストでは Docker Compose で PostgreSQL / Redis / Kafka などを起動し、Article 作成→アウトボックス→購読→投影までのフローを確認する。
 
 ## 影響
 

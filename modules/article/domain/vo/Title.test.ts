@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { Title } from './Title.ts';
 
 describe('生成', () => {
-  it('空白を含む文字列が与えられると、前後の空白が削除され、整形済みの値が返る', () => {
+  it('空白を含む文字列を与えた場合、Titleを生成すると、前後の空白を除いた値が返る', () => {
     // Arrange
     const rawTitle = '  Domain-Driven Design  ';
 
@@ -19,7 +19,7 @@ describe('生成', () => {
     expect(title.value).toBe('Domain-Driven Design');
   });
 
-  it('空文字列が与えられると、生成時にバリデーションされ、例外が返る', () => {
+  it('空文字列を与えた場合、Titleを生成すると、例外が返る', () => {
     // Arrange
     const rawTitle = '  ';
 
@@ -30,7 +30,7 @@ describe('生成', () => {
     expect(act).toThrowError('Title cannot be empty');
   });
 
-  it('最大長を超える文字列が与えられると、生成時にバリデーションされ、例外が返る', () => {
+  it('最大長を超える文字列を与えた場合、Titleを生成すると、例外が返る', () => {
     // Arrange
     const rawTitle = 'a'.repeat(257);
 
@@ -43,7 +43,7 @@ describe('生成', () => {
 });
 
 describe('値比較', () => {
-  it('同じ内容が与えられると、equalsで一致判定が返る', () => {
+  it('同じ内容を与えた場合、equalsを呼び出すと、一致判定が返る', () => {
     // Arrange
     const left = new Title('Hexagonal Architecture');
     const right = new Title('Hexagonal Architecture');
@@ -55,7 +55,7 @@ describe('値比較', () => {
     expect(result).toBe(true);
   });
 
-  it('異なる内容が与えられると、equalsで不一致判定が返る', () => {
+  it('異なる内容を与えた場合、equalsを呼び出すと、不一致判定が返る', () => {
     // Arrange
     const left = new Title('Hexagonal Architecture');
     const right = new Title('Layered Architecture');
