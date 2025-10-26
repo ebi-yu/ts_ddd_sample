@@ -16,5 +16,19 @@ const spec = app.getOpenAPI31Document(
   { unionPreferredType: 'oneOf' },
 );
 
-writeFileSync('./openapi.json', JSON.stringify(spec, null, 2));
+const normalizePathTemplate = (path: string): string => path.replace(/:(\w+)/g, '{$1}');
+
+const normalizedPaths = Object.fromEntries(
+  Object.entries(spec.paths ?? {}).map(([path, definition]) => [
+    normalizePathTemplate(path),
+    definition,
+  ]),
+);
+
+const normalizedSpec = {
+  ...spec,
+  paths: normalizedPaths,
+};
+
+writeFileSync('./openapi.json', JSON.stringify(normalizedSpec, null, 2));
 console.log('✅ openapi.json exported!');
