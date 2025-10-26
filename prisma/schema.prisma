@@ -27,6 +27,7 @@ enum ArticleEventType {
   PUBLISH
   ARCHIVE
   RE_DRAFT
+  DELETE
 }
 
 model OutboxEvent {

@@ -27,7 +27,7 @@ async function verifyRedisConnectivity(): Promise<void> {
  */
 async function ensureDependenciesReady(): Promise<void> {
   const maxAttempts = 5;
-  const retryDelayMs = 3000;
+  const retryDelayMs = 3002;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
@@ -64,10 +64,10 @@ async function bootstrap(): Promise<void> {
 
     serve({
       fetch: app.fetch,
-      port: 3000,
+      port: Number(process.env.API_PORT),
     });
 
-    console.log('🚀 Server is running at http://localhost:3000');
+    console.log(`🚀 Server is running at http://localhost:${process.env.API_PORT}`);
   } catch (err) {
     console.error('❌ Failed to start server due to missing dependencies:', err);
     process.exit(1);

@@ -1,8 +1,9 @@
-import { resolveKafkaBrokers } from '@shared/utils/Kafka.ts';
-import { ArticleReadModelProjector } from '../readmodel/ArticleReadModelProjector.ts';
+import { ensureKafkaTopics, resolveKafkaBrokers } from '@shared/utils/Kafka.ts';
+import { EVENT_TYPE } from 'modules/article/domain/events/index.ts';
+import { ArticleReadModelSynchronizer } from '../readmodel/ArticleReadModelSynchronizer.ts';
+import { ArticleOutboxDispatcher } from './ArticleOutboxDispatcher.ts';
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
 import { KafkaArticleDomainEventSubscriber } from './KafkaArticleDomainEventSubscriber.ts';
-import { ArticleOutboxDispatcher } from './ArticleOutboxDispatcher.ts';
 
 const DEFAULT_TOPIC = 'article-events';
 const DEFAULT_GROUP_ID = 'article-read-model';
@@ -28,15 +29,26 @@ export async function bootstrapArticleReadModelSubscriber(
   groupId: string = process.env.ARTICLE_READ_MODEL_GROUP_ID ?? DEFAULT_GROUP_ID,
 ): Promise<void> {
   const brokers = resolveKafkaBrokers();
+  const deadLetterTopic = resolveDeadLetterTopic();
+  await ensureKafkaTopics(
+    [topic, deadLetterTopic ?? undefined].filter(
+      (candidate): candidate is string => typeof candidate === 'string',
+    ),
+    brokers,
+  );
   const subscriber = new KafkaArticleDomainEventSubscriber(brokers, topic, groupId, {
     maxRetries: parsePositiveInteger(process.env.ARTICLE_EVENT_MAX_RETRIES),
     retryDelayMs: parsePositiveInteger(process.env.ARTICLE_EVENT_RETRY_DELAY_MS),
-    deadLetterTopic: resolveDeadLetterTopic(),
+    deadLetterTopic,
   });
-  const projector = new ArticleReadModelProjector();
+  const synchronizer = new ArticleReadModelSynchronizer();
 
   await subscriber.subscribe(async (event) => {
-    await projector.project(event);
+    if (event.getType() === EVENT_TYPE.DELETE) {
+      await synchronizer.delete(event);
+      return;
+    }
+    await synchronizer.upsert(event);
   });
 }
 

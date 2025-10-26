@@ -14,7 +14,7 @@
 - **コンシューマ**: `KafkaArticleDomainEventSubscriber`
   - 指定トピックを購読し、受信したメッセージをドメインイベントに復元した上でハンドラへ引き渡します。
 - **投影バッチ**: `ArticleReadModelKafkaConsumer`
-  - 上記コンシューマを組み立て、`ArticleReadModelProjector` に渡すことで Redis のリードモデルを更新します。
+  - 上記コンシューマを組み立て、`ArticleReadModelSynchronizer` に渡すことで Redis のリードモデルを更新します。
 - **障害対応**: `KafkaArticleDomainEventSubscriber` はハンドラ実行に失敗した場合、リトライとデッドレタートピックへの退避を行います。
 
 ## なぜそれぞれが必要か
@@ -25,7 +25,7 @@
 
 ## 障害時の挙動
 
-- ハンドラ（例: `ArticleReadModelProjector`）が例外を投げた場合は既定で最大 3 回まで指数的に遅延を伸ばしながらリトライします。
+- ハンドラ（例: `ArticleReadModelSynchronizer`）が例外を投げた場合は既定で最大 3 回まで指数的に遅延を伸ばしながらリトライします。
 - 既定回数を超えても失敗した場合、メッセージは `article-events-dead-letter` トピックへ退避され、エラー内容と共に保管されます。
 - デッドレターへの送信にも失敗した場合はログ出力のみ行われます。
 

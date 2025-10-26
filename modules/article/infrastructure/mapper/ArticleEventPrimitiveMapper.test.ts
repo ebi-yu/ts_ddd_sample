@@ -97,6 +97,26 @@ describe('ArticleEventPrimitiveMapper', () => {
     expect(restored.getType()).toBe(EVENT_TYPE.PUBLISH);
   });
 
+  it('DELETEイベントを扱う場合、Primitiveへ変換すると、空データが返る', () => {
+    // Arrange
+    const event = ArticleEventFactory.delete({
+      articleId,
+      authorId,
+      version: 10,
+      eventDate: new Date('2024-04-01T00:00:00Z'),
+    });
+
+    // Act
+    const primitive = ArticleEventPrimitiveMapper.toPrimitive(event);
+    const restored = ArticleEventPrimitiveMapper.fromPrimitive(primitive);
+
+    // Assert
+    expect(primitive.data).toEqual({});
+    expect(primitive.type).toBe(EVENT_TYPE.DELETE);
+    expect(restored.getType()).toBe(EVENT_TYPE.DELETE);
+    expect(restored.getVersion()).toBe(10);
+  });
+
   it('未知のイベント種別をシリアライズする場合、toPrimitiveを実行すると、例外が返る', () => {
     // Arrange
     const fakeEvent = {

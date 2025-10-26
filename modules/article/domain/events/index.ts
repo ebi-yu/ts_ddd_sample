@@ -19,6 +19,7 @@ export type {
 export { ArticleArchiveEvent } from './ArticleArchiveEvent.ts';
 export { ArticlePublishEvent } from './ArticlePublishEvent.ts';
 export { ArticleReDraftEvent } from './ArticleReDraftEvent.ts';
+export { ArticleDeleteEvent } from './ArticleDeleteEvent.ts';
 
 export { ArticleEventFactory } from './ArticleEventFactory.ts';
 export type { ArticleEvent, PersistedArticleEvent } from './ArticleEventFactory.ts';

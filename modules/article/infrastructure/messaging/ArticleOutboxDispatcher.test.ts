@@ -10,6 +10,7 @@ import type { PrismaClient } from '@prisma/client';
 import { OutboxStatus } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
+import { ARTICLE_OUTBOX_CONTEXT } from '../constants.ts';
 import { ArticleOutboxDispatcher } from './ArticleOutboxDispatcher.ts';
 
 const createMocks = () => {
@@ -58,13 +59,65 @@ describe('ArticleOutboxDispatcher', () => {
     expect(publisher.publish).not.toHaveBeenCalled();
   });
 
+  it('DELETEコンテキストのイベントが存在する場合、dispatchを実行すると、publishが呼び出される', async () => {
+    // Arrange
+    const { prismaStub, outboxEvent, publisher } = createMocks();
+    const now = new Date();
+    const record = {
+      id: 'outbox-delete-1',
+      context: ARTICLE_OUTBOX_CONTEXT.DELETE,
+      topic: 'test-topic',
+      payload: {
+        articleId: 'article-99',
+        authorId: 'author-1',
+        type: 'DELETE',
+        version: 5,
+        occurredAt: now.toISOString(),
+        data: {},
+      },
+      status: OutboxStatus.PENDING,
+      attempts: 0,
+      availableAt: now,
+      lastError: null,
+      createdAt: now,
+      updatedAt: now,
+      sentAt: null,
+    };
+    outboxEvent.findMany.mockResolvedValueOnce([record]);
+    vi.spyOn(ArticleEventPrimitiveMapper, 'fromPrimitive').mockReturnValue({
+      getArticleId: () => ({ value: 'article-99' }),
+      getType: () => 'DELETE',
+      getVersion: () => 5,
+      getEventDate: () => now,
+      getData: () => ({}),
+    } as any);
+    const dispatcher = new ArticleOutboxDispatcher({
+      prisma: prismaStub,
+      topic: 'test-topic',
+      publisher,
+    });
+
+    // Act
+    await dispatcher.dispatch();
+
+    // Assert
+    expect(publisher.publish).toHaveBeenCalledTimes(1);
+    expect(outboxEvent.update).toHaveBeenCalledWith({
+      where: { id: 'outbox-delete-1' },
+      data: {
+        status: OutboxStatus.SENT,
+        sentAt: expect.any(Date),
+      },
+    });
+  });
+
   it('publishが成功した場合、dispatchを実行すると、SENT更新結果が返る', async () => {
     // Arrange
     const { prismaStub, outboxEvent, publisher } = createMocks();
     const now = new Date();
     const record = {
       id: 'outbox-1',
-      context: 'article',
+      context: ARTICLE_OUTBOX_CONTEXT.CREATE,
       topic: 'test-topic',
       payload: {
         articleId: 'article-1',
@@ -116,7 +169,7 @@ describe('ArticleOutboxDispatcher', () => {
     const now = new Date();
     const record = {
       id: 'outbox-2',
-      context: 'article',
+      context: ARTICLE_OUTBOX_CONTEXT.CREATE,
       topic: 'test-topic',
       payload: {
         articleId: 'article-2',
@@ -174,7 +227,7 @@ describe('ArticleOutboxDispatcher', () => {
     const now = new Date();
     const record = {
       id: 'outbox-3',
-      context: 'article',
+      context: ARTICLE_OUTBOX_CONTEXT.CREATE,
       topic: 'test-topic',
       payload: {
         articleId: 'article-3',
@@ -231,7 +284,7 @@ describe('ArticleOutboxDispatcher', () => {
     const now = new Date();
     const record = {
       id: 'outbox-4',
-      context: 'article',
+      context: ARTICLE_OUTBOX_CONTEXT.CREATE,
       topic: 'test-topic',
       payload: null,
       status: OutboxStatus.PENDING,

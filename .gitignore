@@ -26,4 +26,7 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+.test-small
+.test-e2e
 .test
+

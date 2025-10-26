@@ -1,4 +1,5 @@
 import { OutboxStatus, PrismaClient } from '@prisma/client';
+import { ARTICLE_OUTBOX_CONTEXT } from '../constants.ts';
 import type { ArticleEventPrimitive } from '../mapper/ArticleEventPrimitiveMapper.ts';
 import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
 import { KafkaDomainEventPublisher } from './KafkaArticleDomainEventPublisher.ts';
@@ -10,7 +11,6 @@ const defaultPrismaClient = new PrismaClient();
 const DEFAULT_BATCH_SIZE = Number.parseInt(process.env.OUTBOX_BATCH_SIZE ?? '10', 10);
 const DEFAULT_RETRY_DELAY_MS = Number.parseInt(process.env.OUTBOX_RETRY_DELAY_MS ?? '5000', 10);
 const DEFAULT_MAX_ATTEMPTS = Number.parseInt(process.env.OUTBOX_MAX_ATTEMPTS ?? '5', 10);
-const OUTBOX_CONTEXT = 'article';
 
 export type ArticleOutboxDispatcherOptions = {
   batchSize?: number;
@@ -49,7 +49,6 @@ export class ArticleOutboxDispatcher {
     const now = new Date();
     const pendingEvents = await this.prisma.outboxEvent.findMany({
       where: {
-        context: OUTBOX_CONTEXT,
         topic: this.topic,
         status: OutboxStatus.PENDING,
         availableAt: {
@@ -66,24 +65,43 @@ export class ArticleOutboxDispatcher {
 
     for (const record of pendingEvents) {
       const payload = record.payload as ArticleEventPrimitive | null;
+
       if (!payload) {
         await this.markAsFailed(record.id, record.attempts, 'Outbox payload is empty');
         continue;
       }
+      if (record.context === ARTICLE_OUTBOX_CONTEXT.CREATE) {
+        try {
+          const event = ArticleEventPrimitiveMapper.fromPrimitive(payload);
+          await this.publisher.publish(event);
+          await this.prisma.outboxEvent.update({
+            where: { id: record.id },
+            data: {
+              status: OutboxStatus.SENT,
+              sentAt: new Date(),
+            },
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          await this.reschedule(record.id, record.attempts, message);
+        }
+      }
 
-      try {
-        const event = ArticleEventPrimitiveMapper.fromPrimitive(payload);
-        await this.publisher.publish(event);
-        await this.prisma.outboxEvent.update({
-          where: { id: record.id },
-          data: {
-            status: OutboxStatus.SENT,
-            sentAt: new Date(),
-          },
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        await this.reschedule(record.id, record.attempts, message);
+      if (record.context === ARTICLE_OUTBOX_CONTEXT.DELETE) {
+        try {
+          const event = ArticleEventPrimitiveMapper.fromPrimitive(payload);
+          await this.publisher.publish(event);
+          await this.prisma.outboxEvent.update({
+            where: { id: record.id },
+            data: {
+              status: OutboxStatus.SENT,
+              sentAt: new Date(),
+            },
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          await this.reschedule(record.id, record.attempts, message);
+        }
       }
     }
   }

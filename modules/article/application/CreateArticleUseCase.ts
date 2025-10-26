@@ -1,7 +1,7 @@
 import { ConflictException } from '@shared/utils/exception/ConflictException.ts';
 import { Article, ArticleId, AuthorId, Content, Title } from '../domain/index.ts';
 import type { ICreateArticleUseCase } from './adapters/inbound/ICreateArticleUseCase.ts';
-import type { IArticleRepository } from './adapters/outbound/IArticleEventRepository.ts';
+import type { IArticleEventCommandRepository } from './adapters/outbound/IArticleEventCommandRepository.ts';
 import type { IDomainEventPublisher } from './adapters/outbound/IDomainEventPublisher.ts';
 import type { CreateArticleDtoType } from './dto/input/CreateArticleDTO.ts';
 
@@ -10,7 +10,7 @@ import type { CreateArticleDtoType } from './dto/input/CreateArticleDTO.ts';
  */
 export class CreateArticleUseCase implements ICreateArticleUseCase {
   constructor(
-    private readonly articleRepository: IArticleRepository,
+    private readonly articleEventCommandRepository: IArticleEventCommandRepository,
     private readonly domainEventPublisher: IDomainEventPublisher,
   ) {}
 
@@ -23,7 +23,7 @@ export class CreateArticleUseCase implements ICreateArticleUseCase {
       authorId: new AuthorId(article.authorId),
     });
 
-    const isDuplicate = await this.articleRepository.checkDuplicate({
+    const isDuplicate = await this.articleEventCommandRepository.checkDuplicate({
       authorId: newArticle.getAuthorId().value,
       title: newArticle.getCurrentTitle()?.value ?? article.title,
     });
@@ -33,7 +33,7 @@ export class CreateArticleUseCase implements ICreateArticleUseCase {
     }
 
     // リポジトリを通じて永続化
-    await this.articleRepository.create(newArticle);
+    await this.articleEventCommandRepository.create(newArticle);
 
     // Kafkaを通じてドメインイベントを配信
     await this.domainEventPublisher.publish(newArticle.getCurrentEvent());

@@ -1,8 +1,9 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { withOpenApiObject } from '@shared/utils/OpenAPI.ts';
-import { GetArticlesQueryDto } from 'modules/article/application/dto/input/GetArticlesQueryDto.ts';
+import { GetArticleDto } from 'modules/article/application/dto/input/GetArticleDTO.ts';
 import { ArticleReadModelDtoSchema } from 'modules/article/application/dto/output/ArticleReadModelDTO.ts';
 
+// 記事取得のレスポンス例
 const articleExample = {
   id: 'c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050',
   title: 'Domain-Driven Design 入門',
@@ -15,6 +16,7 @@ const articleExample = {
   publishedAt: '2024-01-10T10:00:00.000Z',
 } as const;
 
+// 記事取得のレスポンススキーマ
 const { schema: ArticleReadModelSchema } = withOpenApiObject(ArticleReadModelDtoSchema, {
   refId: 'ArticleReadModel',
   object: {
@@ -34,7 +36,8 @@ const { schema: ArticleReadModelSchema } = withOpenApiObject(ArticleReadModelDto
   },
 });
 
-const { schema: GetArticlesQuerySchema } = withOpenApiObject(GetArticlesQueryDto, {
+// 記事取得のクエリパラメータスキーマ
+const { schema: GetArticlesQuerySchema } = withOpenApiObject(GetArticleDto, {
   refId: 'GetArticlesQuery',
   object: {
     description: '記事取得クエリパラメータのスキーマ',
@@ -47,6 +50,7 @@ const { schema: GetArticlesQuerySchema } = withOpenApiObject(GetArticlesQueryDto
   },
 });
 
+// 記事取得ルートのスキーマ定義
 export const getArticlesRouteSchema = createRoute({
   method: 'get',
   path: '/articles',

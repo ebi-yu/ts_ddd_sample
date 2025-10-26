@@ -1,0 +1,2 @@
+DELETE http://localhost:3002/articles/37ee7aec-bc96-4685-b3cd-12b397313663
+Accept: application/json

@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "DDD Sample API",
-    "version": "1.0.0"
+    "title": "domain_driven_design_sample",
+    "version": "0.0.1"
   },
   "components": {
     "schemas": {
@@ -128,16 +128,13 @@
                 "type": "string",
                 "format": "uuid"
               },
-              "minItems": 1,
               "example": [
                 "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050"
               ]
             },
             "required": true,
-            "name": "ids[]",
-            "in": "query",
-            "style": "form",
-            "explode": true
+            "name": "ids",
+            "in": "query"
           }
         ],
         "responses": {
@@ -169,6 +166,9 @@
           },
           "400": {
             "description": "リクエストパラメータが不正"
+          },
+          "409": {
+            "description": "同じ著者IDとタイトルの記事が既に存在します"
           }
         }
       },
@@ -188,14 +188,49 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "null",
-                  "example": null
+                  "id": {
+                    "~standard": {
+                      "vendor": "zod",
+                      "version": 1
+                    },
+                    "def": {
+                      "type": "string"
+                    },
+                    "type": "string",
+                    "format": null,
+                    "minLength": null,
+                    "maxLength": null
+                  }
                 }
               }
             }
           },
           "400": {
             "description": "リクエストボディが不正"
+          }
+        }
+      }
+    },
+    "/articles/:id": {
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "c1f7c1cb-4d62-4ec0-b8db-0cd6bb781050"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "記事の削除に成功"
+          },
+          "404": {
+            "description": "記事が見つかりません"
           }
         }
       }

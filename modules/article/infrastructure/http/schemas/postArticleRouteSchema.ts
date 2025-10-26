@@ -3,6 +3,7 @@ import { withOpenApiObject } from '@shared/utils/OpenAPI.ts';
 import { CreateArticleDto } from 'modules/article/application/dto/input/CreateArticleDTO.ts';
 import { z } from 'zod';
 
+// 記事作成リクエストボディのスキーマ
 const { schema: CreateArticleRequestSchema } = withOpenApiObject(CreateArticleDto, {
   refId: 'CreateArticleRequest',
   object: {

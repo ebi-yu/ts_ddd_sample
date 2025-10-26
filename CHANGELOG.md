@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0] - 2025-03-17
+## [1.0.1] - 2025-10-26
+
+### 追加
+
+- 記事削除ユースケースを実装し、削除イベントをアウトボックス経由で配信できるようにした  
+  (`modules/article/application/DeleteArticleUseCase.ts`, `modules/article/domain/events/ArticleDeleteEvent.ts` ほか)。
+- 読み取りモデルの同期クラスを `ArticleReadModelSynchronizer` に改名し、DELETE イベント対応や定期再同期バッチを追加  
+  (`modules/article/infrastructure/readmodel/ArticleReadModelSynchronizer.ts`, `scripts/resynchronizeArticleReadModel.ts`)。
+- `resync:readmodel` などの起動スクリプト、ストップ用 `tests/e2e/teardown.sh`、REST クライアント削除用リクエスト等を追加。
+
+### 変更
+
+- Outbox から Kafka への配信、サブスクライバ起動コマンド `start:all` の構成を整理し、README に起動シーケンス・記事登録フローの Mermaid 図を追加。
+- 記事イベントマッパーやリポジトリを DELETE イベント対応にリファクタリングし、Redis との整合性を強化。
+- E2E テストを Redis 反映完了まで待機する方式に変更し、安定性を向上させた。
+
+### 削除
+
+- 古い命名のテスト／ユースケースファイル (`CreateArtucle*`) や未使用 DTO (`GetArticlesQueryDto`) などを整理。
+- 廃止した run-e2e スクリプトを削除。
+
+## [1.0.0] - 2025-10-01
 
 ### 概要
 

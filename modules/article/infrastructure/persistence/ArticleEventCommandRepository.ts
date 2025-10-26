@@ -1,10 +1,11 @@
 import { ArticleEventType, OutboxStatus, PrismaClient, type Prisma } from '@prisma/client';
-import type { IArticleRepository } from 'modules/article/application/adapters/outbound/IArticleEventRepository.ts';
+import type { IArticleEventCommandRepository } from 'modules/article/application/adapters/outbound/IArticleEventCommandRepository.ts';
 import { Article } from 'modules/article/domain/Article.ts';
 import type { CreateEventData } from 'modules/article/domain/events/ArticleCreateEvent.ts';
 import { EVENT_TYPE, type EventType } from 'modules/article/domain/events/ArticleEventBase.ts';
 import type { ChangeTitleEventData } from 'modules/article/domain/events/ArticleTitleChangeEvent.ts';
-import type { ArticleId } from 'modules/article/domain/index.ts';
+import type { ArticleDeleteEvent, ArticleId } from 'modules/article/domain/index.ts';
+import { ARTICLE_OUTBOX_CONTEXT, DEFAULT_OUTBOX_TOPIC } from '../constants.ts';
 import type { ArticleEventPrimitive } from '../mapper/ArticleEventPrimitiveMapper.ts';
 import { ArticleEventPrimitiveMapper } from '../mapper/ArticleEventPrimitiveMapper.ts';
 
@@ -21,10 +22,8 @@ const safeJsonParse = (value: string): unknown => {
 // これにより、読み取りと書き込みの責務を分離(CQRS)し、システムのパフォーマンスとスケーラビリティを向上させることができる
 
 const defaultPrismaClient = new PrismaClient();
-const ARTICLE_OUTBOX_CONTEXT = 'article';
-const DEFAULT_OUTBOX_TOPIC = process.env.ARTICLE_EVENT_TOPIC ?? 'article-events';
 
-export class ArticleEventRepository implements IArticleRepository {
+export class ArticleEventCommandRepository implements IArticleEventCommandRepository {
   constructor(
     private readonly prisma: PrismaClient = defaultPrismaClient,
     private readonly outboxTopic: string = DEFAULT_OUTBOX_TOPIC,
@@ -37,7 +36,9 @@ export class ArticleEventRepository implements IArticleRepository {
     const primitive = ArticleEventPrimitiveMapper.toPrimitive(article.getCurrentEvent());
     const payload = JSON.parse(JSON.stringify(primitive)) as Prisma.InputJsonValue;
 
+    // トランザクション
     await this.prisma.$transaction(async (tx) => {
+      // 記事のドメインイベントを保存
       await tx.articleEventEntity.create({
         data: {
           articleId: article.getId().value,
@@ -52,7 +53,7 @@ export class ArticleEventRepository implements IArticleRepository {
       // イベントの送信は別プロセスで行う
       await tx.outboxEvent.create({
         data: {
-          context: ARTICLE_OUTBOX_CONTEXT,
+          context: ARTICLE_OUTBOX_CONTEXT.CREATE,
           topic: this.outboxTopic,
           payload,
           status: OutboxStatus.PENDING,
@@ -62,6 +63,7 @@ export class ArticleEventRepository implements IArticleRepository {
   }
 
   async findById(articleId: ArticleId): Promise<Article | null> {
+    // 記事に紐づくドメインイベントをすべて取得
     const persistedEvents = await this.prisma.articleEventEntity.findMany({
       where: { articleId: articleId.value },
       orderBy: [{ version: 'asc' }],
@@ -86,12 +88,17 @@ export class ArticleEventRepository implements IArticleRepository {
         data: parsedData as Record<string, unknown>,
       };
 
+      // DBの永続化形式からドメインイベントに変換
       return ArticleEventPrimitiveMapper.fromPrimitive(primitive);
     });
 
+    // ドメインイベントから記事を再構築
     return Article.rehydrate(domainEvents);
   }
 
+  /*
+   * 同一著者が同一タイトルの記事を既に作成しているか確認する
+   */
   async checkDuplicate({ authorId, title }: { authorId: string; title: string }): Promise<boolean> {
     const normalizedTitle = title.trim();
 
@@ -157,23 +164,27 @@ export class ArticleEventRepository implements IArticleRepository {
   }
 
   /*
-   * 指定された記事IDに紐づく記事のドメインイベントをすべて削除する
+   * 指定された記事のドメインイベントをすべて削除し、削除イベントをアウトボックスへ登録する
    */
-  async deleteAll(articleId: ArticleId): Promise<void> {
+  async delete(deleteEvent: ArticleDeleteEvent): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
+      const articleId = deleteEvent.getArticleId().value;
+
       await tx.articleEventEntity.deleteMany({
         where: {
-          articleId: articleId.value,
+          articleId,
         },
       });
 
-      await tx.outboxEvent.deleteMany({
-        where: {
-          payload: {
-            path: ['articleId'],
-            equals: articleId.value,
-          },
-          context: ARTICLE_OUTBOX_CONTEXT,
+      const primitive = ArticleEventPrimitiveMapper.toPrimitive(deleteEvent);
+      const payload = JSON.parse(JSON.stringify(primitive)) as Prisma.InputJsonValue;
+
+      await tx.outboxEvent.create({
+        data: {
+          context: ARTICLE_OUTBOX_CONTEXT.DELETE,
+          topic: this.outboxTopic,
+          payload,
+          status: OutboxStatus.PENDING,
         },
       });
     });

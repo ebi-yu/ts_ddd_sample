@@ -17,6 +17,7 @@ export {
   ArticlePublishEvent,
   ArticleReDraftEvent,
   ArticleTitleChangeEvent,
+  ArticleDeleteEvent,
   EVENT_TYPE,
 } from './events/index.ts';
 export type {

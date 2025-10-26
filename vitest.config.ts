@@ -3,6 +3,8 @@ import { defineConfig } from 'vitest/config';
 
 const rootDir = fileURLToPath(new URL('./', import.meta.url));
 
+// smallテスト用の設定
+// E2Eテストの起動フローはtests/e2e/prepare-e2e.shとpackage.jsonのtest:e2e:*を参照
 export default defineConfig({
   test: {
     globals: true,
@@ -11,7 +13,7 @@ export default defineConfig({
       reporter: ['text', 'html'],
     },
     reporters: ['default', 'html'],
-    outputFile: '.test/index.html',
+    outputFile: '.test-small/index.html',
   },
   resolve: {
     alias: {

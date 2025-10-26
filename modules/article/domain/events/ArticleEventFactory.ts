@@ -12,6 +12,7 @@ import {
   ArticleTitleChangeEvent,
   type ArticleTitleChangeEventInit,
 } from './ArticleTitleChangeEvent.ts';
+import { ArticleDeleteEvent } from './ArticleDeleteEvent.ts';
 
 export type ArticleEvent =
   | ArticleCreateEvent
@@ -19,7 +20,8 @@ export type ArticleEvent =
   | ArticleContentChangeEvent
   | ArticlePublishEvent
   | ArticleArchiveEvent
-  | ArticleReDraftEvent;
+  | ArticleReDraftEvent
+  | ArticleDeleteEvent;
 
 export type PersistedArticleEvent = {
   articleId: string;
@@ -44,6 +46,8 @@ export const ArticleEventFactory = {
   archive: (params: ArticleBaseEventInit): ArticleArchiveEvent => new ArticleArchiveEvent(params),
 
   reDraft: (params: ArticleBaseEventInit): ArticleReDraftEvent => new ArticleReDraftEvent(params),
+
+  delete: (params: ArticleBaseEventInit): ArticleDeleteEvent => new ArticleDeleteEvent(params),
 };
 
 const toTitle = (raw: unknown): Title => {

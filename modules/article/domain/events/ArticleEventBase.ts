@@ -8,6 +8,7 @@ export const EVENT_TYPE = {
   PUBLISH: 'PUBLISH',
   ARCHIVE: 'ARCHIVE',
   RE_DRAFT: 'RE_DRAFT',
+  DELETE: 'DELETE',
 } as const;
 
 export type EventType = (typeof EVENT_TYPE)[keyof typeof EVENT_TYPE];

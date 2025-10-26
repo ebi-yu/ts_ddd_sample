@@ -1,4 +1,6 @@
-// src/doc.ts
+/*
+ * openapi.jsonを生成するスクリプト
+ */
 import { writeFileSync } from 'fs';
 import app from 'modules/index.ts';
 import packageJson from '../package.json' with { type: 'json' };

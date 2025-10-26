@@ -1,0 +1,27 @@
+services:
+  postgres:
+    container_name: ts_ddd_postgres_e2e
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ts_ddd_sample_e2e
+    volumes:
+      - postgres_data_e2e:/var/lib/postgresql/data
+
+  redis:
+    container_name: ts_ddd_redis_e2e
+    volumes:
+      - redis_data_e2e:/data
+
+  kafka:
+    container_name: ts_ddd_kafka_e2e
+    volumes:
+      - kafka_data_e2e:/var/lib/kafka/data
+
+volumes:
+  postgres_data_e2e:
+    driver: local
+  redis_data_e2e:
+    driver: local
+  kafka_data_e2e:
+    driver: local

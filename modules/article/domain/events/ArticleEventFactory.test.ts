@@ -16,6 +16,7 @@ import { EVENT_TYPE } from './ArticleEventBase.ts';
 import { ArticlePublishEvent } from './ArticlePublishEvent.ts';
 import { ArticleReDraftEvent } from './ArticleReDraftEvent.ts';
 import { ArticleTitleChangeEvent } from './ArticleTitleChangeEvent.ts';
+import { ArticleDeleteEvent } from './ArticleDeleteEvent.ts';
 
 const articleId = new ArticleId('b2c4bf9c-7f9a-429c-9b79-7dc414c3d46c');
 const authorId = new AuthorId('22606304-4286-42e8-9277-9c81b1bc7dfd');
@@ -123,6 +124,22 @@ describe('生成', () => {
     // Assert
     expect(event).toBeInstanceOf(ArticleReDraftEvent);
     expect(event.getType()).toBe(EVENT_TYPE.RE_DRAFT);
+    expect(event.getData()).toBeUndefined();
+  });
+
+  it('deleteを呼び出した場合、ArticleDeleteEventを生成すると、データはundefinedが返る', () => {
+    // Arrange
+
+    // Act
+    const event = ArticleEventFactory.delete({
+      articleId,
+      authorId,
+      version: 7,
+    });
+
+    // Assert
+    expect(event).toBeInstanceOf(ArticleDeleteEvent);
+    expect(event.getType()).toBe(EVENT_TYPE.DELETE);
     expect(event.getData()).toBeUndefined();
   });
 });

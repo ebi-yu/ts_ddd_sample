@@ -65,6 +65,7 @@ export const ArticleEventPrimitiveMapper = {
       case EVENT_TYPE.PUBLISH:
       case EVENT_TYPE.ARCHIVE:
       case EVENT_TYPE.RE_DRAFT:
+      case EVENT_TYPE.DELETE:
         return { ...base, data: {} };
       default:
         throw new Error(`Unsupported event type for serialization: ${event.getType()}`);
@@ -141,6 +142,13 @@ export const ArticleEventPrimitiveMapper = {
         });
       case EVENT_TYPE.RE_DRAFT:
         return ArticleEventFactory.reDraft({
+          articleId,
+          authorId,
+          version: serialized.version,
+          eventDate: occurredAt,
+        });
+      case EVENT_TYPE.DELETE:
+        return ArticleEventFactory.delete({
           articleId,
           authorId,
           version: serialized.version,

@@ -73,7 +73,7 @@ services:
   #     - ARTICLE_EVENT_TOPIC=article-events
   #     - ARTICLE_READ_MODEL_GROUP_ID=article-read-model
   #   ports:
-  #     - "3000:3000"
+  #     - "3002:3002"
   #   restart: unless-stopped
 
   # article-readmodel:

@@ -1,6 +1,6 @@
 # read-modelについて
 
-CQRS(コマンドクエリ責務分離)パターンに則って、記事の読み取り専用モデルを書き込みモデル(ArticleEventRepository)から分離しています。
+CQRS(コマンドクエリ責務分離)パターンに則って、記事の読み取り専用モデルを書き込みモデル(ArticleEventCommandRepository )から分離しています。
 このモジュールでは、Redisを使用して記事の読み取り専用モデルを管理しています。
 
 ## Redisとは

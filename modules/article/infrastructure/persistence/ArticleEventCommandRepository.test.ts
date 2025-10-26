@@ -1,23 +1,26 @@
 /**
- * ArticleEventRepository のドメインイベント再構築を検証する。
+ * ArticleEventCommandRepository  のドメインイベント再構築を検証する。
  * - findById がイベント列から Article 集約を復元する
  * - 対象イベントが無い場合は null が返る
  */
+import { OutboxStatus, type PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PrismaClient } from '@prisma/client';
-import { ArticleEventRepository } from './ArticleEventRepository.ts';
-import { ArticleId } from '../../domain/vo/ArticleId.ts';
 import { Article } from '../../domain/Article.ts';
-import { ArticleId as DomainArticleId } from '../../domain/vo/ArticleId.ts';
+import { ArticleId, ArticleId as DomainArticleId } from '../../domain/vo/ArticleId.ts';
 import { AuthorId } from '../../domain/vo/AuthorId.ts';
-import { Title } from '../../domain/vo/Title.ts';
 import { Content } from '../../domain/vo/Content.ts';
+import { Title } from '../../domain/vo/Title.ts';
+import { ArticleEventFactory } from '../../domain/events/ArticleEventFactory.ts';
+import { ARTICLE_OUTBOX_CONTEXT } from '../constants.ts';
+import { ArticleEventCommandRepository } from './ArticleEventCommandRepository.ts';
+import { EVENT_TYPE } from '../../domain/events/ArticleEventBase.ts';
 
 const createPrismaStub = () => {
   const articleEventEntity = {
     findMany: vi.fn(),
     create: vi.fn(),
     deleteMany: vi.fn(),
+    findFirst: vi.fn(),
   };
 
   const outboxEvent = {
@@ -48,7 +51,7 @@ const createPrismaStub = () => {
   };
 };
 
-describe('ArticleEventRepository.findById', () => {
+describe('ArticleEventCommandRepository .findById', () => {
   const articleId = new ArticleId('11111111-2222-4333-8444-555566667777');
 
   beforeEach(() => {
@@ -59,7 +62,7 @@ describe('ArticleEventRepository.findById', () => {
     // Arrange
     const { prismaStub, articleEventEntity } = createPrismaStub();
     articleEventEntity.findMany.mockResolvedValueOnce([]);
-    const repository = new ArticleEventRepository(prismaStub);
+    const repository = new ArticleEventCommandRepository(prismaStub);
 
     // Act
     const result = await repository.findById(articleId);
@@ -102,7 +105,7 @@ describe('ArticleEventRepository.findById', () => {
       },
     ]);
 
-    const repository = new ArticleEventRepository(prismaStub);
+    const repository = new ArticleEventCommandRepository(prismaStub);
 
     // Act
     const result = await repository.findById(articleId);
@@ -115,7 +118,7 @@ describe('ArticleEventRepository.findById', () => {
   });
 });
 
-describe('ArticleEventRepository.checkDuplicate', () => {
+describe('ArticleEventCommandRepository .checkDuplicate', () => {
   const authorId = 'aaaa1111-bbbb-4ccc-8ddd-eeeeffff0000';
 
   beforeEach(() => {
@@ -151,7 +154,7 @@ describe('ArticleEventRepository.checkDuplicate', () => {
         updatedAt: new Date('2024-01-01T00:00:00Z'),
       },
     ]);
-    const repository = new ArticleEventRepository(prismaStub);
+    const repository = new ArticleEventCommandRepository(prismaStub);
 
     // Act
     const result = await repository.checkDuplicate({
@@ -186,7 +189,7 @@ describe('ArticleEventRepository.checkDuplicate', () => {
         updatedAt: new Date('2024-03-01T00:00:00Z'),
       },
     ]);
-    const repository = new ArticleEventRepository(prismaStub);
+    const repository = new ArticleEventCommandRepository(prismaStub);
 
     // Act
     const result = await repository.checkDuplicate({
@@ -199,7 +202,48 @@ describe('ArticleEventRepository.checkDuplicate', () => {
   });
 });
 
-describe('ArticleEventRepository.create', () => {
+describe('ArticleEventCommandRepository .delete', () => {
+  const articleId = new ArticleId('99999999-aaaa-4bbb-8ccc-ddddeeeeffff');
+  const authorId = new AuthorId('aaaa1111-bbbb-4ccc-8ddd-eeeeffff0000');
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('deleteを実行すると、イベント削除とDELETEアウトボックス登録が行われる', async () => {
+    // Arrange
+    const { prismaStub, articleEventEntity, outboxEvent } = createPrismaStub();
+    const repository = new ArticleEventCommandRepository(prismaStub);
+    const deleteEvent = ArticleEventFactory.delete({
+      articleId,
+      authorId,
+      version: 10,
+    });
+
+    // Act
+    await repository.delete(deleteEvent);
+
+    // Assert
+    expect(articleEventEntity.deleteMany).toHaveBeenCalledWith({
+      where: { articleId: articleId.value },
+    });
+    expect(outboxEvent.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        context: ARTICLE_OUTBOX_CONTEXT.DELETE,
+        topic: expect.any(String),
+        payload: expect.objectContaining({
+          articleId: articleId.value,
+          authorId: authorId.value,
+          type: EVENT_TYPE.DELETE,
+          version: 10,
+        }),
+        status: OutboxStatus.PENDING,
+      }),
+    });
+  });
+});
+
+describe('ArticleEventCommandRepository .create', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -207,7 +251,7 @@ describe('ArticleEventRepository.create', () => {
   it('イベント保存とアウトボックス登録を行う場合、createを実行すると、同一トランザクション結果が返る', async () => {
     // Arrange
     const { prismaStub, articleEventEntity, outboxEvent, $transaction } = createPrismaStub();
-    const repository = new ArticleEventRepository(prismaStub);
+    const repository = new ArticleEventCommandRepository(prismaStub);
     const article = Article.create({
       id: new DomainArticleId('6f9c3ae9-1234-4b5d-8e7f-3c2b1a0f9e8d'),
       authorId: new AuthorId('aaaa1111-bbbb-4ccc-8ddd-eeeeffff0000'),
