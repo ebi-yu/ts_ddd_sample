@@ -46,12 +46,18 @@ export class KafkaArticleDomainEventSubscriber {
    * 指定されたハンドラで記事のドメインイベントを購読する
    */
   async subscribe(handler: ArticleEventHandler): Promise<void> {
+    // Kafkaクライアントの作成
     const kafka = new Kafka({ brokers: this.brokerList });
+    // 購読者の作成
     const consumer = kafka.consumer({ groupId: this.groupId });
+    
+    // 「デッドレター用トピック（失敗時の再送先）」が設定されているか
     const shouldUseDeadLetter =
       typeof this.deadLetterTopic === 'string' && this.deadLetterTopic.length > 0;
 
+    // Kafkaブローカーとの接続を確立。
     await consumer.connect();
+    // 指定したトピックを購読（listen）開始
     await consumer.subscribe({ topic: this.topic, fromBeginning: true });
 
     if (shouldUseDeadLetter) {
@@ -59,6 +65,7 @@ export class KafkaArticleDomainEventSubscriber {
       await this.deadLetterProducer.connect();
     }
 
+    // 受け取ったメッセージの処理
     await consumer.run({
       eachMessage: async ({ message }) => {
         if (!message.value) return;
@@ -87,6 +94,7 @@ export class KafkaArticleDomainEventSubscriber {
           error: err,
           attempt,
         });
+        // 失敗したとき用のトピックに追加
         await this.sendToDeadLetter(payload, key, err);
         return;
       }
@@ -101,6 +109,7 @@ export class KafkaArticleDomainEventSubscriber {
     }
   }
 
+  // 失敗時の再実行用のドメインイベントを送る
   private async sendToDeadLetter(
     payload: string,
     key: string | null,
